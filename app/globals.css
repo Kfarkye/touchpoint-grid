@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-surface-0 text-text-primary;
+  }
+
+  /* Scrollbar — thin, dark, unobtrusive */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-4 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-zinc-600;
+  }
+}
+
+@layer components {
+  /* Table row hover state */
+  .grid-row {
+    @apply border-b border-border transition-colors duration-100;
+  }
+  .grid-row:hover {
+    @apply bg-surface-2;
+  }
+
+  /* Filter pill */
+  .pill {
+    @apply px-3 py-1.5 rounded-full text-xs font-medium
+           border border-border text-text-secondary
+           transition-all duration-150 cursor-pointer select-none;
+  }
+  .pill:hover {
+    @apply border-border-hover text-text-primary;
+  }
+  .pill-active {
+    @apply bg-accent/10 border-accent/30 text-accent;
+  }
+
+  /* Sort header */
+  .sort-header {
+    @apply flex items-center gap-1.5 cursor-pointer select-none
+           text-text-tertiary hover:text-text-secondary transition-colors;
+  }
+  .sort-header-active {
+    @apply text-accent;
+  }
+
+  /* Priority bar — mini horizontal indicator */
+  .priority-bar {
+    @apply h-1 rounded-full;
+  }
+}
