@@ -28,7 +28,7 @@ interface Props {
   onVisibleRowsChange?: (rows: TouchpointRow[]) => void;
 }
 
-const NOVA_BASE = "https://nova.ayahealthcare.com/#/candidates";
+const NOVA_BASE = "https://nova.ayahealthcare.com/#/recruiting/candidates";
 const SORT_LABELS: Record<string, string> = {
   priority: "urgency",
   score: "priority score",
@@ -162,7 +162,7 @@ function SortIcon({ direction }: { direction: false | "asc" | "desc" }) {
 }
 
 function CandidateCell({ row }: { row: TouchpointRow }) {
-  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
+  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}/new-profile/about` : null;
   const phoneDisplay = hasPhone(row.phone)
     ? formatDisplay(row.phone)
     : "Phone not listed";
@@ -208,7 +208,7 @@ function RowActions({ row }: { row: TouchpointRow }) {
   const phoneTel = phoneRaw.replace(/\s+/g, "");
 
   const emailValue = row.email?.trim() ?? "";
-  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
+  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}/new-profile/about` : null;
 
   const actionClass =
     "inline-flex items-center justify-center text-zinc-500 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
