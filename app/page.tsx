@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SortingState } from "@tanstack/react-table";
 import { Download } from "lucide-react";
 import { FilterBar } from "@/components/filter-bar";
-import { QuickLinks } from "@/components/quick-links";
 import { StatsBar } from "@/components/stats-bar";
 import { TouchpointTable } from "@/components/touchpoint-table";
 import { formatDisplay } from "@/lib/phone";
@@ -180,15 +179,12 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-surface-0">
-      <header className="border-b border-border bg-surface-0/80 backdrop-blur">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4">
+      <header className="sticky top-0 z-20 border-b border-border bg-surface-0/95 backdrop-blur">
+        <div className="mx-auto flex max-w-[1700px] items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-            <span className="text-sm font-medium tracking-tight text-text-primary">
-              Recruiter Command Board
-            </span>
-            <span className="rounded-full border border-border px-2 py-0.5 font-mono text-2xs text-text-tertiary">
-              Live Slate
+            <div className="h-2 w-2 rounded-full bg-accent" />
+            <span className="text-sm font-semibold tracking-tight text-text-primary">
+              Candidate Follow-Up Board
             </span>
           </div>
 
@@ -207,7 +203,7 @@ export default function Page() {
               className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
             >
               <Download className="h-3.5 w-3.5" />
-              Export List
+              Export
             </button>
 
             <button
@@ -221,31 +217,22 @@ export default function Page() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1600px] space-y-6 px-6 py-6">
-        <div className="rounded-xl border border-border bg-gradient-to-r from-surface-1 to-surface-2 px-5 py-4">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
-                Candidate Follow-Up Board
-              </h1>
-              <p className="mt-1 text-sm text-text-tertiary">
-                Prioritized follow-up queue based on contract timing and outreach
-                recency.
-              </p>
-            </div>
-            <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
-              <span className="rounded-full border border-border bg-surface-1 px-2.5 py-1">
-                {exportRows.length} in current view
-              </span>
-              <span className="rounded-full border border-border bg-surface-1 px-2.5 py-1">
-                {stats.critical} immediate follow-ups
-              </span>
-            </div>
+      <main className="mx-auto max-w-[1700px] space-y-4 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-text-tertiary">
+            Work queue sorted by urgency and last outreach.
+          </p>
+          <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
+            <span className="rounded-full border border-border px-2.5 py-1">
+              {exportRows.length} in view
+            </span>
+            <span className="rounded-full border border-border px-2.5 py-1">
+              {stats.critical} immediate
+            </span>
           </div>
         </div>
 
         <StatsBar stats={stats} loading={loading} />
-        <QuickLinks />
 
         <FilterBar
           priorityFilter={priorityFilter}

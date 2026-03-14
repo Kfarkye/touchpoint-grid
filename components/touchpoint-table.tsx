@@ -246,19 +246,10 @@ function RowActions({
   const canLogChannel = (nextChannel: TouchChannel) =>
     nextChannel === "email" ? emailAvailable : phoneAvailable;
 
-  const openLog = (nextChannel: TouchChannel) => {
-    if (!canLogChannel(nextChannel)) return;
-
-    setChannel(nextChannel);
-    setOutcome("connected");
-    setNote("");
-    setLogError(null);
-    setLogOpen(true);
-  };
-
   const onCall = () => {
     if (!phoneAvailable) return;
 
+    setChannel("phone");
     window.location.href = `rcmobile://call?number=${phoneE164}`;
     window.setTimeout(() => {
       if (document.visibilityState === "visible") {
@@ -306,77 +297,49 @@ function RowActions({
 
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onCall}
-            disabled={!phoneAvailable}
-            title="Call in RingCentral"
-            className={actionClass}
-          >
-            <Phone className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => openLog("phone")}
-            disabled={!phoneAvailable}
-            className="rounded border border-border px-1.5 py-0.5 text-[10px] text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-            title="Log call"
-          >
-            Log
-          </button>
-        </div>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={onCall}
+          disabled={!phoneAvailable}
+          title="Call in RingCentral"
+          className={actionClass}
+        >
+          <Phone className="h-5 w-5" />
+        </button>
 
-        <div className="inline-flex items-center gap-1">
-          <a
-            href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
-            title="Text in RingCentral"
-            className={`${actionClass} ${
-              !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
-            }`}
-            aria-disabled={!phoneAvailable}
-            onClick={(event) => {
-              if (!phoneAvailable) event.preventDefault();
-            }}
-          >
-            <MessageSquare className="h-5 w-5" />
-          </a>
-          <button
-            type="button"
-            onClick={() => openLog("text")}
-            disabled={!phoneAvailable}
-            className="rounded border border-border px-1.5 py-0.5 text-[10px] text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-            title="Log text"
-          >
-            Log
-          </button>
-        </div>
+        <a
+          href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
+          title="Text in RingCentral"
+          className={`${actionClass} ${
+            !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
+          }`}
+          aria-disabled={!phoneAvailable}
+          onClick={(event) => {
+            if (!phoneAvailable) {
+              event.preventDefault();
+              return;
+            }
+            setChannel("text");
+          }}
+        >
+          <MessageSquare className="h-5 w-5" />
+        </a>
 
-        <div className="inline-flex items-center gap-1">
-          <button
-            type="button"
-            disabled={!emailAvailable}
-            title={emailValue || "No email"}
-            className={actionClass}
-            onClick={() => {
-              if (emailAvailable) {
-                window.location.href = `mailto:${emailValue}`;
-              }
-            }}
-          >
-            <Mail className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => openLog("email")}
-            disabled={!emailAvailable}
-            className="rounded border border-border px-1.5 py-0.5 text-[10px] text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
-            title="Log email"
-          >
-            Log
-          </button>
-        </div>
+        <button
+          type="button"
+          disabled={!emailAvailable}
+          title={emailValue || "No email"}
+          className={actionClass}
+          onClick={() => {
+            if (emailAvailable) {
+              setChannel("email");
+              window.location.href = `mailto:${emailValue}`;
+            }
+          }}
+        >
+          <Mail className="h-5 w-5" />
+        </button>
 
         <button
           type="button"
@@ -399,13 +362,27 @@ function RowActions({
             <ExternalLink className="h-5 w-5" />
           </a>
         )}
+
+        <button
+          type="button"
+          onClick={() => {
+            if (!canLogChannel(channel)) return;
+            setLogError(null);
+            setLogOpen((current) => !current);
+          }}
+          disabled={!canLogChannel(channel)}
+          className="ml-1 rounded border border-border px-2 py-1 text-[10px] font-medium text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+          title={`Log ${CHANNEL_LABELS[channel]}`}
+        >
+          Log {CHANNEL_LABELS[channel]}
+        </button>
       </div>
 
       {logOpen && (
-        <div className="w-[280px] rounded-md border border-border bg-surface-2 p-2.5">
+        <div className="w-[270px] rounded-md border border-border bg-surface-2 p-2.5">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-[11px] uppercase tracking-wider text-text-tertiary">
-              Log {CHANNEL_LABELS[channel]}
+              Log Touch
             </span>
             <button
               type="button"
@@ -414,6 +391,24 @@ function RowActions({
             >
               Close
             </button>
+          </div>
+
+          <div className="mb-2 flex items-center gap-1">
+            {(Object.keys(CHANNEL_LABELS) as TouchChannel[]).map((itemChannel) => (
+              <button
+                key={itemChannel}
+                type="button"
+                disabled={!canLogChannel(itemChannel)}
+                onClick={() => setChannel(itemChannel)}
+                className={`rounded border px-1.5 py-0.5 text-[10px] ${
+                  channel === itemChannel
+                    ? "border-accent/40 bg-accent/10 text-accent"
+                    : "border-border text-text-secondary"
+                } disabled:cursor-not-allowed disabled:opacity-30`}
+              >
+                {CHANNEL_LABELS[itemChannel]}
+              </button>
+            ))}
           </div>
 
           <div className="space-y-2">
@@ -460,7 +455,7 @@ function RowActions({
                 disabled={savingLog}
                 className="rounded border border-accent/40 bg-accent/10 px-2 py-1 text-[10px] text-accent hover:border-accent disabled:opacity-50"
               >
-                {savingLog ? "Saving..." : "Save Log"}
+                {savingLog ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
@@ -611,7 +606,7 @@ function useColumns(
         cell: ({ row }) => (
           <RowActions row={row.original} onTouchLogged={onTouchLogged} />
         ),
-        size: 300,
+        size: 250,
         enableSorting: false,
       },
     ],
@@ -657,7 +652,7 @@ export function TouchpointTable({
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
       <div className="overflow-x-auto xl:overflow-x-visible">
-        <table className="w-full min-w-[1380px] xl:min-w-0">
+        <table className="w-full min-w-[1300px] xl:min-w-0">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border">
@@ -668,7 +663,7 @@ export function TouchpointTable({
                   return (
                     <th
                       key={header.id}
-                      className="px-3 py-2.5 text-left"
+                      className="sticky top-0 z-10 bg-surface-1 px-3 py-2.5 text-left"
                       style={{ width: header.getSize() }}
                     >
                       {header.isPlaceholder ? null : (
