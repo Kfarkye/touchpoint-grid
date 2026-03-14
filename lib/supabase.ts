@@ -3,6 +3,9 @@ import type { TouchpointRow } from "@/lib/types";
 
 let supabaseClient: SupabaseClient | null = null;
 
+export type TouchChannel = "phone" | "text" | "email";
+export type TouchOutcome = "connected" | "voicemail" | "no_answer";
+
 function getSupabaseClient(): SupabaseClient {
   if (supabaseClient) return supabaseClient;
 
@@ -33,4 +36,25 @@ export async function fetchTouchpointGrid(): Promise<TouchpointRow[]> {
     phone: row.phone ?? "",
     email: row.email ?? "",
   }));
+}
+
+export async function logTouch(params: {
+  candidateId: string;
+  channel: TouchChannel;
+  outcome: TouchOutcome;
+  note?: string;
+  direction?: "outbound" | "inbound";
+}): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.rpc("log_touch", {
+    p_candidate_id: params.candidateId,
+    p_channel: params.channel,
+    p_direction: params.direction ?? "outbound",
+    p_outcome: params.outcome,
+    p_note: params.note?.trim() ? params.note.trim() : null,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }

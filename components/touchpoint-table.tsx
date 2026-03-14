@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-table";
 import { Check, Copy, ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
 import { formatDisplay, hasPhone, toE164 } from "@/lib/phone";
+import { logTouch, type TouchChannel, type TouchOutcome } from "@/lib/supabase";
 import {
   BUCKET_LABELS,
   PRIORITY_CONFIG,
@@ -26,9 +27,11 @@ interface Props {
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
   onVisibleRowsChange?: (rows: TouchpointRow[]) => void;
+  onTouchLogged?: () => Promise<void> | void;
 }
 
 const NOVA_BASE = "https://nova.ayahealthcare.com/#/candidates";
+
 const SORT_LABELS: Record<string, string> = {
   priority: "urgency",
   score: "priority score",
@@ -40,6 +43,18 @@ const SORT_LABELS: Record<string, string> = {
   touch: "last outreach",
   bucket: "workflow stage",
 };
+
+const CHANNEL_LABELS: Record<TouchChannel, string> = {
+  phone: "Call",
+  text: "Text",
+  email: "Email",
+};
+
+const OUTCOME_OPTIONS: Array<{ value: TouchOutcome; label: string }> = [
+  { value: "connected", label: "Connected" },
+  { value: "voicemail", label: "Voicemail" },
+  { value: "no_answer", label: "No Answer" },
+];
 
 function PriorityBadge({
   level,
@@ -139,6 +154,7 @@ function LifecycleTag({ row }: { row: TouchpointRow }) {
       </div>
     );
   }
+
   if (row.bucket === "between_assignments" || row.bucket === "prospect") {
     return (
       <span className="text-[11px] italic text-text-tertiary">
@@ -146,6 +162,7 @@ function LifecycleTag({ row }: { row: TouchpointRow }) {
       </span>
     );
   }
+
   return null;
 }
 
@@ -199,8 +216,20 @@ function CandidateCell({ row }: { row: TouchpointRow }) {
   );
 }
 
-function RowActions({ row }: { row: TouchpointRow }) {
+function RowActions({
+  row,
+  onTouchLogged,
+}: {
+  row: TouchpointRow;
+  onTouchLogged?: () => Promise<void> | void;
+}) {
   const [copied, setCopied] = useState(false);
+  const [logOpen, setLogOpen] = useState(false);
+  const [channel, setChannel] = useState<TouchChannel>("phone");
+  const [outcome, setOutcome] = useState<TouchOutcome>("connected");
+  const [note, setNote] = useState("");
+  const [savingLog, setSavingLog] = useState(false);
+  const [logError, setLogError] = useState<string | null>(null);
 
   const phoneRaw = row.phone ?? "";
   const phoneAvailable = hasPhone(phoneRaw);
@@ -208,10 +237,24 @@ function RowActions({ row }: { row: TouchpointRow }) {
   const phoneTel = phoneRaw.replace(/\s+/g, "");
 
   const emailValue = row.email?.trim() ?? "";
+  const emailAvailable = Boolean(emailValue);
   const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
 
   const actionClass =
     "inline-flex items-center justify-center text-zinc-500 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+
+  const canLogChannel = (nextChannel: TouchChannel) =>
+    nextChannel === "email" ? emailAvailable : phoneAvailable;
+
+  const openLog = (nextChannel: TouchChannel) => {
+    if (!canLogChannel(nextChannel)) return;
+
+    setChannel(nextChannel);
+    setOutcome("connected");
+    setNote("");
+    setLogError(null);
+    setLogOpen(true);
+  };
 
   const onCall = () => {
     if (!phoneAvailable) return;
@@ -226,6 +269,7 @@ function RowActions({ row }: { row: TouchpointRow }) {
 
   const onCopy = async () => {
     if (!phoneAvailable) return;
+
     try {
       await navigator.clipboard.writeText(phoneRaw);
       setCopied(true);
@@ -235,72 +279,200 @@ function RowActions({ row }: { row: TouchpointRow }) {
     }
   };
 
+  const submitLog = async () => {
+    if (savingLog) return;
+
+    setSavingLog(true);
+    setLogError(null);
+
+    try {
+      await logTouch({
+        candidateId: row.candidate_id,
+        channel,
+        outcome,
+        note,
+        direction: "outbound",
+      });
+
+      setLogOpen(false);
+      setNote("");
+      await onTouchLogged?.();
+    } catch (error: unknown) {
+      setLogError(error instanceof Error ? error.message : "Unable to save touch log");
+    } finally {
+      setSavingLog(false);
+    }
+  };
+
   return (
-    <div className="flex items-center gap-1.5">
-      <button
-        type="button"
-        onClick={onCall}
-        disabled={!phoneAvailable}
-        title="Call in RingCentral"
-        className={actionClass}
-      >
-        <Phone className="h-5 w-5" />
-      </button>
+    <div className="space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="inline-flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onCall}
+            disabled={!phoneAvailable}
+            title="Call in RingCentral"
+            className={actionClass}
+          >
+            <Phone className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => openLog("phone")}
+            disabled={!phoneAvailable}
+            className="rounded border border-border px-1.5 py-0.5 text-[10px] text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+            title="Log call"
+          >
+            Log
+          </button>
+        </div>
 
-      <a
-        href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
-        title="Text in RingCentral"
-        className={`${actionClass} ${
-          !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
-        }`}
-        aria-disabled={!phoneAvailable}
-        onClick={(event) => {
-          if (!phoneAvailable) event.preventDefault();
-        }}
-      >
-        <MessageSquare className="h-5 w-5" />
-      </a>
+        <div className="inline-flex items-center gap-1">
+          <a
+            href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
+            title="Text in RingCentral"
+            className={`${actionClass} ${
+              !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
+            }`}
+            aria-disabled={!phoneAvailable}
+            onClick={(event) => {
+              if (!phoneAvailable) event.preventDefault();
+            }}
+          >
+            <MessageSquare className="h-5 w-5" />
+          </a>
+          <button
+            type="button"
+            onClick={() => openLog("text")}
+            disabled={!phoneAvailable}
+            className="rounded border border-border px-1.5 py-0.5 text-[10px] text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+            title="Log text"
+          >
+            Log
+          </button>
+        </div>
 
-      <button
-        type="button"
-        disabled={!emailValue}
-        title={emailValue || "No email"}
-        className={actionClass}
-        onClick={() => {
-          if (emailValue) {
-            window.location.href = `mailto:${emailValue}`;
-          }
-        }}
-      >
-        <Mail className="h-5 w-5" />
-      </button>
+        <div className="inline-flex items-center gap-1">
+          <button
+            type="button"
+            disabled={!emailAvailable}
+            title={emailValue || "No email"}
+            className={actionClass}
+            onClick={() => {
+              if (emailAvailable) {
+                window.location.href = `mailto:${emailValue}`;
+              }
+            }}
+          >
+            <Mail className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => openLog("email")}
+            disabled={!emailAvailable}
+            className="rounded border border-border px-1.5 py-0.5 text-[10px] text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+            title="Log email"
+          >
+            Log
+          </button>
+        </div>
 
-      <button
-        type="button"
-        onClick={onCopy}
-        disabled={!phoneAvailable}
-        title="Copy phone number"
-        className={actionClass}
-      >
-        {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
-      </button>
-
-      {novaHref && (
-        <a
-          href={novaHref}
-          target="_blank"
-          rel="noreferrer noopener"
-          title="Open in Nova"
+        <button
+          type="button"
+          onClick={onCopy}
+          disabled={!phoneAvailable}
+          title="Copy phone number"
           className={actionClass}
         >
-          <ExternalLink className="h-5 w-5" />
-        </a>
+          {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+        </button>
+
+        {novaHref && (
+          <a
+            href={novaHref}
+            target="_blank"
+            rel="noreferrer noopener"
+            title="Open in Nova"
+            className={actionClass}
+          >
+            <ExternalLink className="h-5 w-5" />
+          </a>
+        )}
+      </div>
+
+      {logOpen && (
+        <div className="w-[280px] rounded-md border border-border bg-surface-2 p-2.5">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-[11px] uppercase tracking-wider text-text-tertiary">
+              Log {CHANNEL_LABELS[channel]}
+            </span>
+            <button
+              type="button"
+              onClick={() => setLogOpen(false)}
+              className="text-[10px] text-text-tertiary hover:text-text-secondary"
+            >
+              Close
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-[10px] uppercase tracking-wider text-text-tertiary">
+              Outcome
+            </label>
+            <select
+              value={outcome}
+              onChange={(event) => setOutcome(event.target.value as TouchOutcome)}
+              className="w-full rounded border border-border bg-surface-1 px-2 py-1.5 text-xs text-text-primary focus:border-accent/40 focus:outline-none"
+            >
+              {OUTCOME_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <label className="block text-[10px] uppercase tracking-wider text-text-tertiary">
+              Note (optional)
+            </label>
+            <input
+              type="text"
+              value={note}
+              onChange={(event) => setNote(event.target.value)}
+              placeholder="Example: Discussed extension; interested"
+              className="w-full rounded border border-border bg-surface-1 px-2 py-1.5 text-xs text-text-primary placeholder:text-text-tertiary focus:border-accent/40 focus:outline-none"
+              maxLength={220}
+            />
+
+            {logError && <p className="text-[10px] text-red-400">{logError}</p>}
+
+            <div className="mt-2 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setLogOpen(false)}
+                className="rounded border border-border px-2 py-1 text-[10px] text-text-secondary hover:border-border-hover hover:text-text-primary"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitLog}
+                disabled={savingLog}
+                className="rounded border border-accent/40 bg-accent/10 px-2 py-1 text-[10px] text-accent hover:border-accent disabled:opacity-50"
+              >
+                {savingLog ? "Saving..." : "Save Log"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
 }
 
-function useColumns(): ColumnDef<TouchpointRow>[] {
+function useColumns(
+  onTouchLogged?: () => Promise<void> | void
+): ColumnDef<TouchpointRow>[] {
   return useMemo(
     () => [
       {
@@ -436,12 +608,14 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
         id: "actions",
         header: "Outreach",
         accessorFn: (row) => row.phone,
-        cell: ({ row }) => <RowActions row={row.original} />,
-        size: 145,
+        cell: ({ row }) => (
+          <RowActions row={row.original} onTouchLogged={onTouchLogged} />
+        ),
+        size: 300,
         enableSorting: false,
       },
     ],
-    []
+    [onTouchLogged]
   );
 }
 
@@ -451,8 +625,9 @@ export function TouchpointTable({
   sorting,
   onSortingChange,
   onVisibleRowsChange,
+  onTouchLogged,
 }: Props) {
-  const columns = useColumns();
+  const columns = useColumns(onTouchLogged);
 
   const table = useReactTable({
     data,
@@ -482,7 +657,7 @@ export function TouchpointTable({
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
       <div className="overflow-x-auto xl:overflow-x-visible">
-        <table className="w-full min-w-[1240px] xl:min-w-0">
+        <table className="w-full min-w-[1380px] xl:min-w-0">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border">

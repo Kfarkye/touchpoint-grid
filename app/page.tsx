@@ -285,6 +285,7 @@ export default function Page() {
             sorting={sorting}
             onSortingChange={setSorting}
             onVisibleRowsChange={onVisibleRowsChange}
+            onTouchLogged={loadData}
           />
         )}
       </main>
