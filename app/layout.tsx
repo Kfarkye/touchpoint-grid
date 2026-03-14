@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Touchpoint Grid — Recruiter Command",
-  description: "Weekly outreach priority grid for travel healthcare recruiting",
+  title: "Candidate Follow-Up Board",
+  description: "Recruiter outreach board for travel healthcare placements",
 };
 
 export default function RootLayout({

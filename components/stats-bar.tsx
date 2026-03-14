@@ -14,32 +14,32 @@ interface StatsBarProps {
 const cards = [
   {
     key: "critical" as const,
-    label: "Critical",
+    label: "Immediate Follow-Up",
     color: "text-red-400",
     border: "border-red-500/20",
   },
   {
     key: "high" as const,
-    label: "High Priority",
+    label: "Priority This Week",
     color: "text-orange-400",
     border: "border-orange-500/20",
   },
   {
     key: "needsTouch" as const,
-    label: "Needs Touch",
-    sub: ">14 days",
+    label: "Overdue Outreach",
+    sub: "14+ days since touch",
     color: "text-yellow-400",
     border: "border-yellow-500/20",
   },
   {
     key: "signedNext" as const,
-    label: "Signed Next",
+    label: "Rebooked",
     color: "text-emerald-400",
     border: "border-emerald-500/20",
   },
   {
     key: "total" as const,
-    label: "Total",
+    label: "Active Roster",
     color: "text-text-primary",
     border: "border-border",
   },
@@ -47,7 +47,7 @@ const cards = [
 
 export function StatsBar({ stats, loading }: StatsBarProps) {
   return (
-    <div className="grid grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
       {cards.map((card) => (
         <div
           key={card.key}

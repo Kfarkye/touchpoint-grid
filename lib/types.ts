@@ -5,6 +5,7 @@ export interface TouchpointRow {
   first_name: string;
   last_name: string;
   phone: string;
+  email: string;
   specialty: string;
   profession: string;
   current_facility: string | null;

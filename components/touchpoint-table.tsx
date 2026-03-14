@@ -1,33 +1,62 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  type SortingState,
   type ColumnDef,
+  type OnChangeFn,
+  type SortingState,
   flexRender,
 } from "@tanstack/react-table";
-import { TouchpointRow, PRIORITY_CONFIG, BUCKET_LABELS, PriorityLevel, Bucket } from "@/lib/types";
+import { Check, Copy, ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
+import { formatDisplay, hasPhone, toE164 } from "@/lib/phone";
+import {
+  BUCKET_LABELS,
+  PRIORITY_CONFIG,
+  type Bucket,
+  type PriorityLevel,
+  type TouchpointRow,
+} from "@/lib/types";
 
 interface Props {
   data: TouchpointRow[];
   loading: boolean;
+  sorting: SortingState;
+  onSortingChange: OnChangeFn<SortingState>;
+  onVisibleRowsChange?: (rows: TouchpointRow[]) => void;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Priority badge                                                     */
-/* ------------------------------------------------------------------ */
-function PriorityBadge({ level }: { level: PriorityLevel }) {
+const NOVA_BASE = "https://nova.ayahealthcare.com/#/candidates";
+const SORT_LABELS: Record<string, string> = {
+  priority: "urgency",
+  score: "priority score",
+  name: "clinician",
+  facility: "facility",
+  days_to_end: "days left",
+  weeks: "contract week",
+  lifecycle: "next placement",
+  touch: "last outreach",
+  bucket: "workflow stage",
+};
+
+function PriorityBadge({
+  level,
+  suggestedAction,
+}: {
+  level: PriorityLevel;
+  suggestedAction: string;
+}) {
   const cfg = PRIORITY_CONFIG[level];
+
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px]
-                  font-medium ring-1 ${cfg.bg} ${cfg.color} ${cfg.ring}`}
+      title={suggestedAction}
+      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium ring-1 ${cfg.bg} ${cfg.color} ${cfg.ring}`}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full ${
+        className={`h-1.5 w-1.5 rounded-full ${
           level === "critical"
             ? "bg-red-400 animate-pulse"
             : level === "high"
@@ -44,9 +73,6 @@ function PriorityBadge({ level }: { level: PriorityLevel }) {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Score bar — horizontal micro-visualization                         */
-/* ------------------------------------------------------------------ */
 function ScoreBar({ score }: { score: number }) {
   const color =
     score >= 80
@@ -61,22 +87,19 @@ function ScoreBar({ score }: { score: number }) {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="w-16 h-1.5 rounded-full bg-surface-3 overflow-hidden">
+      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-3">
         <div
           className={`h-full rounded-full ${color} transition-all duration-500`}
           style={{ width: `${Math.min(100, score)}%` }}
         />
       </div>
-      <span className="text-xs font-mono text-text-tertiary w-7 text-right">
+      <span className="w-7 text-right font-mono text-xs text-text-tertiary">
         {Math.round(score)}
       </span>
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Days indicator — color-coded urgency                               */
-/* ------------------------------------------------------------------ */
 function DaysToEnd({
   days,
   hasNext,
@@ -105,62 +128,197 @@ function DaysToEnd({
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Lifecycle indicator — shows signed next inline                     */
-/* ------------------------------------------------------------------ */
 function LifecycleTag({ row }: { row: TouchpointRow }) {
   if (row.has_next_assignment) {
     return (
       <div className="flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        <span className="text-[11px] text-emerald-400 truncate max-w-[140px]">
-          {row.next_facility ?? "Signed"}
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+        <span className="max-w-[140px] truncate text-[11px] text-emerald-400">
+          {row.next_facility ?? "Booked"}
         </span>
       </div>
     );
   }
   if (row.bucket === "between_assignments" || row.bucket === "prospect") {
     return (
-      <span className="text-[11px] text-text-tertiary italic">
-        No assignment
+      <span className="text-[11px] italic text-text-tertiary">
+        Open to next assignment
       </span>
     );
   }
   return null;
 }
 
-/* ------------------------------------------------------------------ */
-/*  Sort icon                                                          */
-/* ------------------------------------------------------------------ */
 function SortIcon({ direction }: { direction: false | "asc" | "desc" }) {
-  if (!direction)
-    return (
-      <span className="text-text-tertiary/40 text-[10px] ml-0.5">↕</span>
-    );
+  if (!direction) {
+    return <span className="ml-0.5 text-[10px] text-text-tertiary/40">↕</span>;
+  }
+
   return (
-    <span className="text-accent text-[10px] ml-0.5">
+    <span className="ml-0.5 text-[10px] text-accent">
       {direction === "asc" ? "↑" : "↓"}
     </span>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Column definitions                                                 */
-/* ------------------------------------------------------------------ */
+function CandidateCell({ row }: { row: TouchpointRow }) {
+  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
+  const phoneDisplay = hasPhone(row.phone)
+    ? formatDisplay(row.phone)
+    : "Phone not listed";
+  const emailValue = row.email?.trim() ?? "";
+
+  return (
+    <div className="min-w-0">
+      {novaHref ? (
+        <a
+          href={novaHref}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="text-sm font-medium text-text-primary hover:text-accent"
+          title="Open in Nova"
+        >
+          {row.candidate_name}
+        </a>
+      ) : (
+        <div className="text-sm font-medium text-text-primary">{row.candidate_name}</div>
+      )}
+      <div className="text-[11px] text-text-tertiary">{row.specialty || "—"}</div>
+      <div className="font-mono text-[11px] text-text-secondary">{phoneDisplay}</div>
+      {emailValue ? (
+        <div
+          className="max-w-[240px] truncate text-[11px] text-text-tertiary"
+          title={emailValue}
+        >
+          {emailValue}
+        </div>
+      ) : (
+        <div className="text-[11px] text-text-tertiary/60">Email not listed</div>
+      )}
+    </div>
+  );
+}
+
+function RowActions({ row }: { row: TouchpointRow }) {
+  const [copied, setCopied] = useState(false);
+
+  const phoneRaw = row.phone ?? "";
+  const phoneAvailable = hasPhone(phoneRaw);
+  const phoneE164 = phoneAvailable ? toE164(phoneRaw) : "";
+  const phoneTel = phoneRaw.replace(/\s+/g, "");
+
+  const emailValue = row.email?.trim() ?? "";
+  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
+
+  const actionClass =
+    "inline-flex items-center justify-center text-zinc-500 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+
+  const onCall = () => {
+    if (!phoneAvailable) return;
+
+    window.location.href = `rcmobile://call?number=${phoneE164}`;
+    window.setTimeout(() => {
+      if (document.visibilityState === "visible") {
+        window.location.href = `tel:${phoneTel}`;
+      }
+    }, 700);
+  };
+
+  const onCopy = async () => {
+    if (!phoneAvailable) return;
+    try {
+      await navigator.clipboard.writeText(phoneRaw);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard permissions vary by browser context; no-op on failure.
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={onCall}
+        disabled={!phoneAvailable}
+        title="Call in RingCentral"
+        className={actionClass}
+      >
+        <Phone className="h-5 w-5" />
+      </button>
+
+      <a
+        href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
+        title="Text in RingCentral"
+        className={`${actionClass} ${
+          !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
+        }`}
+        aria-disabled={!phoneAvailable}
+        onClick={(event) => {
+          if (!phoneAvailable) event.preventDefault();
+        }}
+      >
+        <MessageSquare className="h-5 w-5" />
+      </a>
+
+      <button
+        type="button"
+        disabled={!emailValue}
+        title={emailValue || "No email"}
+        className={actionClass}
+        onClick={() => {
+          if (emailValue) {
+            window.location.href = `mailto:${emailValue}`;
+          }
+        }}
+      >
+        <Mail className="h-5 w-5" />
+      </button>
+
+      <button
+        type="button"
+        onClick={onCopy}
+        disabled={!phoneAvailable}
+        title="Copy phone number"
+        className={actionClass}
+      >
+        {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
+      </button>
+
+      {novaHref && (
+        <a
+          href={novaHref}
+          target="_blank"
+          rel="noreferrer noopener"
+          title="Open in Nova"
+          className={actionClass}
+        >
+          <ExternalLink className="h-5 w-5" />
+        </a>
+      )}
+    </div>
+  );
+}
+
 function useColumns(): ColumnDef<TouchpointRow>[] {
   return useMemo(
     () => [
       {
         id: "priority",
-        header: "Priority",
+        header: "Urgency",
         accessorKey: "priority_score",
-        cell: ({ row }) => <PriorityBadge level={row.original.priority_level} />,
-        size: 100,
+        cell: ({ row }) => (
+          <PriorityBadge
+            level={row.original.priority_level}
+            suggestedAction={row.original.suggested_action}
+          />
+        ),
+        size: 110,
         sortingFn: "basic",
       },
       {
         id: "score",
-        header: "Score",
+        header: "Priority Score",
         accessorKey: "priority_score",
         cell: ({ row }) => <ScoreBar score={row.original.priority_score} />,
         size: 110,
@@ -168,19 +326,10 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
       },
       {
         id: "name",
-        header: "Candidate",
+        header: "Clinician",
         accessorKey: "candidate_name",
-        cell: ({ row }) => (
-          <div>
-            <div className="text-sm text-text-primary font-medium">
-              {row.original.candidate_name}
-            </div>
-            <div className="text-[11px] text-text-tertiary">
-              {row.original.specialty}
-            </div>
-          </div>
-        ),
-        size: 180,
+        cell: ({ row }) => <CandidateCell row={row.original} />,
+        size: 260,
         sortingFn: "text",
       },
       {
@@ -188,8 +337,8 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
         header: "Facility",
         accessorKey: "current_facility",
         cell: ({ row }) => (
-          <div className="max-w-[200px]">
-            <div className="text-sm text-text-secondary truncate">
+          <div className="max-w-[220px]">
+            <div className="truncate text-sm text-text-secondary">
               {row.original.current_facility ?? "—"}
             </div>
             {row.original.current_facility_state && (
@@ -199,7 +348,7 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
             )}
           </div>
         ),
-        size: 200,
+        size: 220,
         sortingFn: "text",
       },
       {
@@ -212,29 +361,33 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
             hasNext={row.original.has_next_assignment}
           />
         ),
-        size: 80,
+        size: 90,
         sortingFn: "basic",
       },
       {
         id: "weeks",
-        header: "Week",
+        header: "Contract Week",
         accessorKey: "week_of_contract",
         cell: ({ row }) =>
           row.original.week_of_contract !== null ? (
             <span className="font-mono text-xs text-text-secondary">
               W{row.original.week_of_contract}
               <span className="text-text-tertiary">
-                /{Math.round((row.original.weeks_remaining ?? 0) + (row.original.week_of_contract ?? 0))}
+                /
+                {Math.round(
+                  (row.original.weeks_remaining ?? 0) +
+                    (row.original.week_of_contract ?? 0)
+                )}
               </span>
             </span>
           ) : (
             <span className="text-text-tertiary">—</span>
           ),
-        size: 70,
+        size: 75,
       },
       {
         id: "lifecycle",
-        header: "Next",
+        header: "Next Placement",
         accessorFn: (row) => (row.has_next_assignment ? 1 : 0),
         cell: ({ row }) => <LifecycleTag row={row.original} />,
         size: 160,
@@ -242,51 +395,49 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
       },
       {
         id: "touch",
-        header: "Last Touch",
+        header: "Last Outreach",
         accessorKey: "days_since_touch",
         cell: ({ row }) => {
-          const d = row.original.days_since_touch;
-          const overdue = d > 14;
+          const days = row.original.days_since_touch;
+          const overdue = days > 14;
+
           return (
             <div className="flex items-center gap-1.5">
-              {overdue && (
-                <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
-              )}
+              {overdue && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />}
               <span
                 className={`font-mono text-xs ${
                   overdue ? "text-yellow-400" : "text-text-tertiary"
                 }`}
               >
-                {d}d ago
+                {days}d ago
               </span>
             </div>
           );
         },
-        size: 90,
+        size: 100,
         sortingFn: "basic",
       },
       {
         id: "bucket",
-        header: "Bucket",
+        header: "Workflow Stage",
         accessorKey: "bucket",
         cell: ({ row }) => (
-          <span className="text-[11px] text-text-tertiary">
+          <span
+            title={row.original.suggested_action}
+            className="text-[11px] text-text-tertiary"
+          >
             {BUCKET_LABELS[row.original.bucket as Bucket] ?? row.original.bucket}
           </span>
         ),
-        size: 130,
+        size: 140,
         sortingFn: "text",
       },
       {
-        id: "action",
-        header: "Action",
-        accessorKey: "suggested_action",
-        cell: ({ row }) => (
-          <span className="text-[11px] text-text-secondary leading-tight line-clamp-2">
-            {row.original.suggested_action}
-          </span>
-        ),
-        size: 220,
+        id: "actions",
+        header: "Outreach",
+        accessorFn: (row) => row.phone,
+        cell: ({ row }) => <RowActions row={row.original} />,
+        size: 145,
         enableSorting: false,
       },
     ],
@@ -294,83 +445,90 @@ function useColumns(): ColumnDef<TouchpointRow>[] {
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Table component                                                    */
-/* ------------------------------------------------------------------ */
-export function TouchpointTable({ data, loading }: Props) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "priority", desc: true },
-  ]);
-
+export function TouchpointTable({
+  data,
+  loading,
+  sorting,
+  onSortingChange,
+  onVisibleRowsChange,
+}: Props) {
   const columns = useColumns();
 
   const table = useReactTable({
     data,
     columns,
     state: { sorting },
-    onSortingChange: setSorting,
+    onSortingChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
+  useEffect(() => {
+    if (!onVisibleRowsChange) return;
+    onVisibleRowsChange(table.getRowModel().rows.map((row) => row.original));
+  }, [data, onVisibleRowsChange, sorting, table]);
+
   if (loading && data.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-surface-1 p-12 text-center">
-        <div className="inline-block w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin" />
-        <p className="text-sm text-text-tertiary mt-3">Loading grid data...</p>
+        <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
+        <p className="mt-3 text-sm text-text-tertiary">
+          Pulling current candidate priorities...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border bg-surface-1 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          {/* Header */}
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
+      <div className="overflow-x-auto xl:overflow-x-visible">
+        <table className="w-full min-w-[1240px] xl:min-w-0">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border">
-                {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="px-3 py-2.5 text-left"
-                    style={{ width: header.getSize() }}
-                  >
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={`sort-header text-[11px] uppercase tracking-wider font-medium ${
-                          header.column.getIsSorted()
-                            ? "sort-header-active"
-                            : ""
-                        }`}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                        {header.column.getCanSort() && (
-                          <SortIcon
-                            direction={header.column.getIsSorted()}
-                          />
-                        )}
-                      </div>
-                    )}
-                  </th>
-                ))}
+                {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const sorted = header.column.getIsSorted();
+
+                  return (
+                    <th
+                      key={header.id}
+                      className="px-3 py-2.5 text-left"
+                      style={{ width: header.getSize() }}
+                    >
+                      {header.isPlaceholder ? null : (
+                        <div
+                          className={
+                            canSort
+                              ? `sort-header text-[11px] uppercase tracking-wider font-medium ${
+                                  sorted ? "sort-header-active" : ""
+                                }`
+                              : "text-[11px] uppercase tracking-wider text-text-tertiary font-medium"
+                          }
+                          onClick={
+                            canSort ? header.column.getToggleSortingHandler() : undefined
+                          }
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {canSort && <SortIcon direction={sorted} />}
+                        </div>
+                      )}
+                    </th>
+                  );
+                })}
               </tr>
             ))}
           </thead>
 
-          {/* Body */}
           <tbody>
-            {table.getRowModel().rows.map((row, i) => (
+            {table.getRowModel().rows.map((row, index) => (
               <tr
                 key={row.id}
                 className="grid-row"
-                style={{
-                  animationDelay: `${Math.min(i * 15, 300)}ms`,
-                }}
+                style={{ animationDelay: `${Math.min(index * 15, 300)}ms` }}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td
@@ -387,17 +545,18 @@ export function TouchpointTable({ data, loading }: Props) {
         </table>
       </div>
 
-      {/* Footer */}
       {data.length > 0 && (
-        <div className="border-t border-border px-4 py-2.5 flex items-center justify-between">
+        <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
           <span className="text-[11px] text-text-tertiary">
-            {table.getRowModel().rows.length} rows
+            {table.getRowModel().rows.length} clinicians in view
           </span>
-          <span className="text-[11px] text-text-tertiary font-mono">
-            sorted by{" "}
+          <span className="font-mono text-[11px] text-text-tertiary">
+            ordered by{" "}
             {sorting[0]
-              ? `${sorting[0].id} ${sorting[0].desc ? "desc" : "asc"}`
-              : "default"}
+              ? `${SORT_LABELS[sorting[0].id] ?? sorting[0].id} ${
+                  sorting[0].desc ? "(high to low)" : "(low to high)"
+                }`
+              : "default urgency"}
           </span>
         </div>
       )}
