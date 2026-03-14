@@ -11,7 +11,7 @@ function getSupabaseClient(): SupabaseClient {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY"
+      "Board setup is incomplete for this deployment. Add Supabase URL and anon key in Vercel Project Settings, then redeploy."
     );
   }
 

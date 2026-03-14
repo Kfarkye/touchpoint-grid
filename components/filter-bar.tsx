@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import { BUCKET_LABELS, type Bucket } from "@/lib/types";
 
 interface FilterBarProps {
   priorityFilter: string;
@@ -25,13 +26,20 @@ const priorities: { key: string; label: string }[] = [
 
 const buckets: { key: string; label: string }[] = [
   { key: "all", label: "All Stages" },
-  { key: "critical_redeploy", label: "Urgent Redeploy" },
-  { key: "redeploy_window", label: "Redeploy Window" },
-  { key: "approaching_end", label: "Approaching End" },
-  { key: "active_working", label: "Active Assignment" },
-  { key: "signed_next", label: "Signed Next" },
-  { key: "between_assignments", label: "Between Assignments" },
-  { key: "prospect", label: "Prospect" },
+  ...(
+    [
+      "critical_redeploy",
+      "redeploy_window",
+      "approaching_end",
+      "active_working",
+      "signed_next",
+      "between_assignments",
+      "prospect",
+    ] as Bucket[]
+  ).map((key) => ({
+    key,
+    label: BUCKET_LABELS[key],
+  })),
 ];
 
 export function FilterBar({

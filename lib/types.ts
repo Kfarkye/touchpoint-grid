@@ -83,11 +83,11 @@ export const PRIORITY_CONFIG: Record<
 };
 
 export const BUCKET_LABELS: Record<Bucket, string> = {
-  critical_redeploy: "Critical Redeploy",
-  redeploy_window: "Redeploy Window",
-  approaching_end: "Approaching End",
-  active_working: "Active Working",
-  signed_next: "Signed Next",
-  between_assignments: "Between Assignments",
+  critical_redeploy: "Urgent Redeploy",
+  redeploy_window: "Rebook Window",
+  approaching_end: "Coming Due",
+  active_working: "Active Contract",
+  signed_next: "Rebooked",
+  between_assignments: "Open Market",
   prospect: "Prospect",
 };
