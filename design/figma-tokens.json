@@ -1,0 +1,176 @@
+{
+  "$themes": [
+    {
+      "id": "recruiter-daylight",
+      "name": "Recruiter Daylight",
+      "selectedTokenSets": {
+        "global": "enabled"
+      }
+    }
+  ],
+  "$metadata": {
+    "tokenSetOrder": ["global"]
+  },
+  "global": {
+    "color.surface.0": {
+      "value": "#eef3f8",
+      "type": "color"
+    },
+    "color.surface.1": {
+      "value": "#ffffff",
+      "type": "color"
+    },
+    "color.surface.2": {
+      "value": "#f6f9fc",
+      "type": "color"
+    },
+    "color.surface.3": {
+      "value": "#e5ecf4",
+      "type": "color"
+    },
+    "color.surface.4": {
+      "value": "#cfd9e4",
+      "type": "color"
+    },
+    "color.text.primary": {
+      "value": "#10253b",
+      "type": "color"
+    },
+    "color.text.secondary": {
+      "value": "#35516f",
+      "type": "color"
+    },
+    "color.text.tertiary": {
+      "value": "#6a8097",
+      "type": "color"
+    },
+    "color.border.default": {
+      "value": "#d3deea",
+      "type": "color"
+    },
+    "color.border.hover": {
+      "value": "#b4c7d9",
+      "type": "color"
+    },
+    "color.accent.default": {
+      "value": "#0f766e",
+      "type": "color"
+    },
+    "color.accent.dim": {
+      "value": "#115e59",
+      "type": "color"
+    },
+    "color.accent.muted": {
+      "value": "#0f766e1a",
+      "type": "color"
+    },
+    "color.priority.critical": {
+      "value": "#b91c1c",
+      "type": "color"
+    },
+    "color.priority.high": {
+      "value": "#b45309",
+      "type": "color"
+    },
+    "color.priority.medium": {
+      "value": "#a16207",
+      "type": "color"
+    },
+    "color.priority.standard": {
+      "value": "#64748b",
+      "type": "color"
+    },
+    "color.priority.low": {
+      "value": "#047857",
+      "type": "color"
+    },
+    "spacing.1": {
+      "value": "4",
+      "type": "spacing"
+    },
+    "spacing.2": {
+      "value": "8",
+      "type": "spacing"
+    },
+    "spacing.3": {
+      "value": "12",
+      "type": "spacing"
+    },
+    "spacing.4": {
+      "value": "16",
+      "type": "spacing"
+    },
+    "spacing.5": {
+      "value": "20",
+      "type": "spacing"
+    },
+    "spacing.6": {
+      "value": "24",
+      "type": "spacing"
+    },
+    "radius.sm": {
+      "value": "6",
+      "type": "borderRadius"
+    },
+    "radius.md": {
+      "value": "8",
+      "type": "borderRadius"
+    },
+    "radius.lg": {
+      "value": "12",
+      "type": "borderRadius"
+    },
+    "font.size.2xs": {
+      "value": "10",
+      "type": "fontSizes"
+    },
+    "font.size.xs": {
+      "value": "12",
+      "type": "fontSizes"
+    },
+    "font.size.sm": {
+      "value": "14",
+      "type": "fontSizes"
+    },
+    "font.size.base": {
+      "value": "16",
+      "type": "fontSizes"
+    },
+    "font.size.lg": {
+      "value": "18",
+      "type": "fontSizes"
+    },
+    "font.weight.regular": {
+      "value": "400",
+      "type": "fontWeights"
+    },
+    "font.weight.medium": {
+      "value": "500",
+      "type": "fontWeights"
+    },
+    "font.weight.semibold": {
+      "value": "600",
+      "type": "fontWeights"
+    },
+    "font.family.sans": {
+      "value": "SF Pro Display, SF Pro, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif",
+      "type": "fontFamilies"
+    },
+    "font.family.mono": {
+      "value": "SF Mono, Fira Code, JetBrains Mono, Menlo, monospace",
+      "type": "fontFamilies"
+    },
+    "size.table.row.compact": {
+      "value": "36",
+      "type": "sizing"
+    },
+    "size.table.header.compact": {
+      "value": "32",
+      "type": "sizing"
+    },
+    "size.action.iconButton": {
+      "value": "24",
+      "type": "sizing"
+    }
+  }
+}
