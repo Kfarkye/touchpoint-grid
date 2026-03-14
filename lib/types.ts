@@ -52,33 +52,33 @@ export const PRIORITY_CONFIG: Record<
 > = {
   critical: {
     label: "Critical",
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    ring: "ring-red-500/30",
+    color: "text-red-700",
+    bg: "bg-red-50",
+    ring: "ring-red-200",
   },
   high: {
     label: "High",
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-    ring: "ring-orange-500/30",
+    color: "text-amber-700",
+    bg: "bg-amber-50",
+    ring: "ring-amber-200",
   },
   medium: {
     label: "Medium",
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/10",
-    ring: "ring-yellow-500/30",
+    color: "text-yellow-700",
+    bg: "bg-yellow-50",
+    ring: "ring-yellow-200",
   },
   standard: {
     label: "Standard",
-    color: "text-zinc-400",
-    bg: "bg-zinc-500/10",
-    ring: "ring-zinc-500/30",
+    color: "text-slate-600",
+    bg: "bg-slate-100",
+    ring: "ring-slate-200",
   },
   low: {
     label: "Low",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    ring: "ring-emerald-500/30",
+    color: "text-emerald-700",
+    bg: "bg-emerald-50",
+    ring: "ring-emerald-200",
   },
 };
 

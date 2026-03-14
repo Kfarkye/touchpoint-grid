@@ -9,7 +9,14 @@
   }
 
   body {
-    @apply bg-surface-0 text-text-primary;
+    @apply text-text-primary;
+    background-color: #eef3f8;
+    background-image: radial-gradient(
+        circle at 5% 0%,
+        rgba(15, 118, 110, 0.08),
+        transparent 38%
+      ),
+      radial-gradient(circle at 100% 20%, rgba(16, 37, 59, 0.06), transparent 42%);
   }
 
   /* Scrollbar — thin, dark, unobtrusive */
@@ -24,7 +31,7 @@
     @apply bg-surface-4 rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-zinc-600;
+    @apply bg-border-hover;
   }
 }
 

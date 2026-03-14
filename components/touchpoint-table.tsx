@@ -73,14 +73,14 @@ function PriorityBadge({
       <span
         className={`h-1.5 w-1.5 rounded-full ${
           level === "critical"
-            ? "bg-red-400 animate-pulse"
+            ? "bg-red-600 animate-pulse"
             : level === "high"
-            ? "bg-orange-400"
+            ? "bg-amber-600"
             : level === "medium"
-            ? "bg-yellow-400"
+            ? "bg-yellow-600"
             : level === "low"
-            ? "bg-emerald-400"
-            : "bg-zinc-400"
+            ? "bg-emerald-600"
+            : "bg-slate-500"
         }`}
       />
       {cfg.label}
@@ -91,14 +91,14 @@ function PriorityBadge({
 function ScoreBar({ score }: { score: number }) {
   const color =
     score >= 80
-      ? "bg-red-400"
+      ? "bg-red-500"
       : score >= 50
-      ? "bg-orange-400"
+      ? "bg-amber-500"
       : score >= 25
-      ? "bg-yellow-400"
+      ? "bg-yellow-500"
       : score >= 15
-      ? "bg-zinc-500"
-      : "bg-emerald-400";
+      ? "bg-slate-400"
+      : "bg-emerald-500";
 
   return (
     <div className="flex items-center gap-1.5">
@@ -125,15 +125,15 @@ function DaysToEnd({
   if (days === null) return <span className="text-text-tertiary">—</span>;
 
   const color = hasNext
-    ? "text-emerald-400"
+    ? "text-emerald-700"
     : days <= 0
-    ? "text-red-400 font-semibold"
+    ? "text-red-700 font-semibold"
     : days <= 14
-    ? "text-red-400"
+    ? "text-red-600"
     : days <= 30
-    ? "text-orange-400"
+    ? "text-amber-600"
     : days <= 45
-    ? "text-yellow-400"
+    ? "text-yellow-700"
     : "text-text-secondary";
 
   return (
@@ -147,8 +147,8 @@ function LifecycleTag({ row }: { row: TouchpointRow }) {
   if (row.has_next_assignment) {
     return (
       <div className="flex items-center gap-1">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-        <span className="max-w-[120px] truncate text-[10px] text-emerald-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+        <span className="max-w-[120px] truncate text-[10px] text-emerald-700">
           {row.next_facility ?? "Booked"}
         </span>
       </div>
@@ -241,7 +241,7 @@ function RowActions({
   const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
 
   const actionClass =
-    "inline-flex h-6 w-6 items-center justify-center rounded border border-border/70 text-zinc-500 transition-colors hover:border-border-hover hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+    "inline-flex h-6 w-6 items-center justify-center rounded border border-border/70 text-slate-500 transition-colors hover:border-border-hover hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
 
   const canLogChannel = (nextChannel: TouchChannel) =>
     nextChannel === "email" ? emailAvailable : phoneAvailable;
@@ -439,7 +439,7 @@ function RowActions({
               maxLength={220}
             />
 
-            {logError && <p className="text-[10px] text-red-400">{logError}</p>}
+            {logError && <p className="text-[10px] text-red-700">{logError}</p>}
 
             <div className="mt-1.5 flex items-center justify-end gap-1.5">
               <button
@@ -568,10 +568,10 @@ function useColumns(
 
           return (
             <div className="flex items-center gap-1.5">
-              {overdue && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />}
+              {overdue && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
               <span
                 className={`font-mono text-[11px] ${
-                  overdue ? "text-yellow-400" : "text-text-tertiary"
+                  overdue ? "text-amber-700" : "text-text-tertiary"
                 }`}
               >
                 {days}d ago

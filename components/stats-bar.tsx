@@ -12,10 +12,10 @@ interface StatsBarProps {
 }
 
 const cards = [
-  { key: "critical" as const, label: "Immediate", color: "text-red-400" },
-  { key: "high" as const, label: "High This Week", color: "text-orange-400" },
-  { key: "needsTouch" as const, label: "Overdue", color: "text-yellow-400" },
-  { key: "signedNext" as const, label: "Rebooked", color: "text-emerald-400" },
+  { key: "critical" as const, label: "Immediate", color: "text-red-700" },
+  { key: "high" as const, label: "High This Week", color: "text-amber-700" },
+  { key: "needsTouch" as const, label: "Overdue", color: "text-yellow-700" },
+  { key: "signedNext" as const, label: "Rebooked", color: "text-emerald-700" },
   { key: "total" as const, label: "Roster", color: "text-text-primary" },
 ];
 
