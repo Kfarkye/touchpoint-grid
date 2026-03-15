@@ -51,9 +51,9 @@ export function FilterBar({
   searchInputRef,
 }: FilterBarProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface-1 px-3 py-3">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-1 flex-col gap-3 xl:flex-row xl:items-center">
+    <div className="rounded-lg border border-border bg-surface-1 px-3 py-2.5">
+      <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex flex-1 flex-col gap-2.5 xl:flex-row xl:items-center">
           <div className="relative w-full max-w-[370px]">
             <input
               ref={searchInputRef}
@@ -76,9 +76,6 @@ export function FilterBar({
           </div>
 
           <div className="hidden items-center gap-1 xl:flex">
-            <span className="mr-1 text-[11px] font-medium text-text-tertiary">
-              Priority
-            </span>
             {priorities.map((priority) => (
               <button
                 key={priority.key}
@@ -92,9 +89,6 @@ export function FilterBar({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-medium text-text-tertiary">
-              Stage
-            </span>
             <select
               value={bucketFilter}
               onChange={(event) => setBucketFilter(event.target.value)}
@@ -115,10 +109,7 @@ export function FilterBar({
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-1 xl:hidden">
-        <span className="mr-1 text-[11px] font-medium text-text-tertiary">
-          Priority
-        </span>
+      <div className="mt-2 flex flex-wrap items-center gap-1 xl:hidden">
         {priorities.map((priority) => (
           <button
             key={priority.key}

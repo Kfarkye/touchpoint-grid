@@ -181,13 +181,10 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-surface-0">
       <header className="sticky top-0 z-20 border-b border-border bg-surface-0/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-3 lg:px-6">
-          <div className="flex items-center gap-3">
-            <div className="h-2 w-2 rounded-full bg-accent" />
-            <span className="font-serif text-lg font-semibold tracking-tight text-text-primary">
-              Recruiter Follow-Up Desk
-            </span>
-          </div>
+        <div className="mx-auto flex max-w-[1220px] items-center justify-between px-4 py-2.5 lg:px-6">
+          <h1 className="font-serif text-[19px] font-semibold tracking-tight text-text-primary">
+            Recruiter Follow-Up Desk
+          </h1>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden font-mono text-2xs text-text-tertiary sm:inline">
@@ -219,16 +216,16 @@ export default function Page() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1280px] space-y-4 px-4 py-4 lg:px-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-text-tertiary">
-            Start at the top and work down. The list is already sorted by who needs a touch first.
+      <main className="mx-auto max-w-[1220px] space-y-3 px-4 py-3 lg:px-6">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] text-text-tertiary">
+            Priority queue for today&apos;s outreach.
           </p>
           <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
-            <span className="rounded border border-border px-2 py-1">
+            <span className="rounded border border-border bg-surface-1 px-2 py-1">
               {exportRows.length} in view
             </span>
-            <span className="rounded border border-border px-2 py-1">
+            <span className="rounded border border-border bg-surface-1 px-2 py-1">
               {stats.critical} urgent now
             </span>
           </div>

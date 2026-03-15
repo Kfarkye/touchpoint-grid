@@ -27,12 +27,12 @@ export function StatsBar({ stats, loading }: StatsBarProps) {
           key={card.key}
           className="border-b border-r border-border px-3 py-2 last:border-r-0 lg:border-b-0"
         >
-          <div className="text-[11px] font-medium text-text-tertiary">
+          <div className="text-[10px] text-text-tertiary">
             {card.label}
           </div>
-          <div className={`mt-1 text-lg font-semibold font-mono ${card.color}`}>
+          <div className={`mt-0.5 text-base font-semibold font-mono ${card.color}`}>
             {loading ? (
-              <span className="inline-block h-5 w-8 animate-pulse rounded bg-surface-3" />
+              <span className="inline-block h-4 w-8 animate-pulse rounded bg-surface-3" />
             ) : (
               stats[card.key]
             )}

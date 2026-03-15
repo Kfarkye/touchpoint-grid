@@ -101,8 +101,8 @@ function ScoreBar({ score }: { score: number }) {
       : "bg-emerald-500";
 
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="h-1.5 w-14 overflow-hidden rounded-full bg-surface-3">
+    <div className="flex items-center gap-1">
+      <div className="h-1.5 w-12 overflow-hidden rounded-full bg-surface-3">
         <div
           className={`h-full rounded-full ${color} transition-all duration-500`}
           style={{ width: `${Math.min(100, score)}%` }}
@@ -184,7 +184,7 @@ function CandidateCell({ row }: { row: TouchpointRow }) {
     ? formatDisplay(row.phone)
     : "No phone";
   const emailValue = row.email?.trim() ?? "";
-  const specialtyValue = row.specialty?.trim() || "Specialty pending";
+  const specialtyValue = row.specialty?.trim() || "—";
   const summaryLine = [specialtyValue, phoneDisplay, emailValue || "No email"].join(
     " | "
   );
@@ -241,7 +241,7 @@ function RowActions({
   const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
 
   const actionClass =
-    "inline-flex h-6 w-6 items-center justify-center rounded border border-border/70 text-text-tertiary transition-colors hover:border-border-hover hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+    "inline-flex h-6 w-6 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-surface-2 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
 
   const canLogChannel = (nextChannel: TouchChannel) =>
     nextChannel === "email" ? emailAvailable : phoneAvailable;
@@ -376,7 +376,7 @@ function RowActions({
           className="ml-0.5 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
           title={`Log ${CHANNEL_LABELS[channel]}`}
         >
-          Log {CHANNEL_LABELS[channel]}
+          Log
         </button>
       </div>
 
@@ -510,9 +510,11 @@ function useColumns(
             <div className="truncate text-[13px] text-text-secondary">
               {row.original.current_facility ?? "—"}
             </div>
-            <div className="truncate text-[10px] text-text-tertiary">
-              {row.original.current_facility_state ?? "No state"}
-            </div>
+            {row.original.current_facility_state && (
+              <div className="truncate text-[10px] text-text-tertiary">
+                {row.original.current_facility_state}
+              </div>
+            )}
           </div>
         ),
         size: 190,
@@ -652,7 +654,7 @@ export function TouchpointTable({
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
       <div className="overflow-x-auto xl:overflow-x-visible">
-        <table className="w-full min-w-[1232px] xl:min-w-0">
+        <table className="w-full min-w-[1188px] xl:min-w-0">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border">
@@ -720,12 +722,11 @@ export function TouchpointTable({
             {table.getRowModel().rows.length} clinicians in view
           </span>
           <span className="font-mono text-[10px] text-text-tertiary">
-            Sorted by{" "}
             {sorting[0]
               ? `${SORT_LABELS[sorting[0].id] ?? sorting[0].id} ${
-                  sorting[0].desc ? "(high to low)" : "(low to high)"
+                  sorting[0].desc ? "↓" : "↑"
                 }`
-              : "default urgency"}
+              : "priority ↓"}
           </span>
         </div>
       )}
