@@ -180,17 +180,17 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-surface-0">
       <header className="sticky top-0 z-20 border-b border-border bg-surface-0/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1700px] items-center justify-between px-6 py-3">
+        <div className="mx-auto flex max-w-[1280px] items-center justify-between px-4 py-3 lg:px-6">
           <div className="flex items-center gap-3">
             <div className="h-2 w-2 rounded-full bg-accent" />
-            <span className="text-sm font-semibold tracking-tight text-text-primary">
-              Candidate Follow-Up Board
+            <span className="font-serif text-lg font-semibold tracking-tight text-text-primary">
+              Recruiter Follow-Up Desk
             </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="font-mono text-2xs text-text-tertiary">
-              Last sync{" "}
+              Updated{" "}
               {lastRefresh.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -203,7 +203,7 @@ export default function Page() {
               className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
             >
               <Download className="h-3.5 w-3.5" />
-              Export
+              Download List
             </button>
 
             <button
@@ -211,23 +211,23 @@ export default function Page() {
               disabled={loading}
               className="rounded-md border border-border px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
             >
-              {loading ? "Syncing..." : "Sync Roster"}
+              {loading ? "Refreshing..." : "Refresh List"}
             </button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1700px] space-y-4 px-6 py-4">
+      <main className="mx-auto max-w-[1280px] space-y-4 px-4 py-4 lg:px-6">
         <div className="flex items-center justify-between">
           <p className="text-sm text-text-tertiary">
-            Work queue sorted by urgency and last outreach.
+            Start at the top and work down. The list is already sorted by who needs a touch first.
           </p>
           <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
-            <span className="rounded-full border border-border px-2.5 py-1">
+            <span className="rounded border border-border px-2 py-1">
               {exportRows.length} in view
             </span>
-            <span className="rounded-full border border-border px-2.5 py-1">
-              {stats.critical} immediate
+            <span className="rounded border border-border px-2 py-1">
+              {stats.critical} urgent now
             </span>
           </div>
         </div>
@@ -255,14 +255,14 @@ export default function Page() {
         {!loading && filtered.length === 0 ? (
           <div className="rounded-lg border border-border bg-surface-1 px-6 py-14 text-center">
             <p className="text-sm text-text-secondary">
-              No clinicians match this view
+              No clinicians match these filters.
             </p>
             <button
               type="button"
               onClick={clearFilters}
               className="mt-3 rounded-md border border-border px-3 py-1.5 text-xs text-text-secondary transition-colors hover:border-border-hover hover:text-text-primary"
             >
-              Reset filters
+              Clear filters
             </button>
           </div>
         ) : (

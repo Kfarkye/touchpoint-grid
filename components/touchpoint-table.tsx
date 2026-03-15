@@ -33,15 +33,15 @@ interface Props {
 const NOVA_BASE = "https://nova.ayahealthcare.com/#/candidates";
 
 const SORT_LABELS: Record<string, string> = {
-  priority: "urgency",
-  score: "priority score",
+  priority: "priority",
+  score: "need score",
   name: "clinician",
   facility: "facility",
   days_to_end: "days left",
   weeks: "contract week",
-  lifecycle: "next placement",
-  touch: "last outreach",
-  bucket: "workflow stage",
+  lifecycle: "next job",
+  touch: "last touch",
+  bucket: "stage",
 };
 
 const CHANNEL_LABELS: Record<TouchChannel, string> = {
@@ -158,7 +158,7 @@ function LifecycleTag({ row }: { row: TouchpointRow }) {
   if (row.bucket === "between_assignments" || row.bucket === "prospect") {
     return (
       <span className="text-[10px] italic text-text-tertiary">
-        Open to next assignment
+        Ready for next assignment
       </span>
     );
   }
@@ -182,10 +182,10 @@ function CandidateCell({ row }: { row: TouchpointRow }) {
   const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
   const phoneDisplay = hasPhone(row.phone)
     ? formatDisplay(row.phone)
-    : "Phone not listed";
+    : "No phone";
   const emailValue = row.email?.trim() ?? "";
-  const specialtyValue = row.specialty?.trim() || "No specialty";
-  const summaryLine = [specialtyValue, phoneDisplay, emailValue || "Email not listed"].join(
+  const specialtyValue = row.specialty?.trim() || "Specialty pending";
+  const summaryLine = [specialtyValue, phoneDisplay, emailValue || "No email"].join(
     " | "
   );
 
@@ -241,7 +241,7 @@ function RowActions({
   const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
 
   const actionClass =
-    "inline-flex h-6 w-6 items-center justify-center rounded border border-border/70 text-slate-500 transition-colors hover:border-border-hover hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+    "inline-flex h-6 w-6 items-center justify-center rounded border border-border/70 text-text-tertiary transition-colors hover:border-border-hover hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
 
   const canLogChannel = (nextChannel: TouchChannel) =>
     nextChannel === "email" ? emailAvailable : phoneAvailable;
@@ -289,7 +289,9 @@ function RowActions({
       setNote("");
       await onTouchLogged?.();
     } catch (error: unknown) {
-      setLogError(error instanceof Error ? error.message : "Unable to save touch log");
+      setLogError(
+        error instanceof Error ? error.message : "We couldn't save that touch. Try again."
+      );
     } finally {
       setSavingLog(false);
     }
@@ -302,7 +304,7 @@ function RowActions({
           type="button"
           onClick={onCall}
           disabled={!phoneAvailable}
-          title="Call in RingCentral"
+          title="Call"
           className={actionClass}
         >
           <Phone className="h-3.5 w-3.5" />
@@ -310,7 +312,7 @@ function RowActions({
 
         <a
           href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
-          title="Text in RingCentral"
+          title="Text"
           className={`${actionClass} ${
             !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
           }`}
@@ -329,7 +331,7 @@ function RowActions({
         <button
           type="button"
           disabled={!emailAvailable}
-          title={emailValue || "No email"}
+          title={emailValue || "No email on file"}
           className={actionClass}
           onClick={() => {
             if (emailAvailable) {
@@ -345,7 +347,7 @@ function RowActions({
           type="button"
           onClick={onCopy}
           disabled={!phoneAvailable}
-          title="Copy phone number"
+          title="Copy number"
           className={actionClass}
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
@@ -381,8 +383,8 @@ function RowActions({
       {logOpen && (
         <div className="w-[240px] rounded-md border border-border bg-surface-2 p-2">
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-[11px] uppercase tracking-wider text-text-tertiary">
-              Log Touch
+            <span className="text-[11px] font-medium text-text-tertiary">
+              Log Follow-Up
             </span>
             <button
               type="button"
@@ -412,7 +414,7 @@ function RowActions({
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-[10px] uppercase tracking-wider text-text-tertiary">
+            <label className="block text-[10px] font-medium text-text-tertiary">
               Outcome
             </label>
             <select
@@ -427,14 +429,14 @@ function RowActions({
               ))}
             </select>
 
-            <label className="block text-[10px] uppercase tracking-wider text-text-tertiary">
+            <label className="block text-[10px] font-medium text-text-tertiary">
               Note (optional)
             </label>
             <input
               type="text"
               value={note}
               onChange={(event) => setNote(event.target.value)}
-              placeholder="Example: Discussed extension; interested"
+              placeholder="Example: Open to extension at current facility"
               className="w-full rounded border border-border bg-surface-1 px-2 py-1 text-[11px] text-text-primary placeholder:text-text-tertiary focus:border-accent/40 focus:outline-none"
               maxLength={220}
             />
@@ -485,7 +487,7 @@ function useColumns(
       },
       {
         id: "score",
-        header: "Priority Score",
+        header: "Need Score",
         accessorKey: "priority_score",
         cell: ({ row }) => <ScoreBar score={row.original.priority_score} />,
         size: 105,
@@ -531,7 +533,7 @@ function useColumns(
       },
       {
         id: "weeks",
-        header: "Contract Week",
+        header: "Week",
         accessorKey: "week_of_contract",
         cell: ({ row }) =>
           row.original.week_of_contract !== null ? (
@@ -552,7 +554,7 @@ function useColumns(
       },
       {
         id: "lifecycle",
-        header: "Next Placement",
+        header: "Next Job",
         accessorFn: (row) => (row.has_next_assignment ? 1 : 0),
         cell: ({ row }) => <LifecycleTag row={row.original} />,
         size: 132,
@@ -560,7 +562,7 @@ function useColumns(
       },
       {
         id: "touch",
-        header: "Last Outreach",
+        header: "Last Touch",
         accessorKey: "days_since_touch",
         cell: ({ row }) => {
           const days = row.original.days_since_touch;
@@ -584,7 +586,7 @@ function useColumns(
       },
       {
         id: "bucket",
-        header: "Workflow Stage",
+        header: "Stage",
         accessorKey: "bucket",
         cell: ({ row }) => (
           <span
@@ -599,7 +601,7 @@ function useColumns(
       },
       {
         id: "actions",
-        header: "Outreach",
+        header: "Actions",
         accessorFn: (row) => row.phone,
         cell: ({ row }) => (
           <RowActions row={row.original} onTouchLogged={onTouchLogged} />
@@ -641,7 +643,7 @@ export function TouchpointTable({
       <div className="rounded-lg border border-border bg-surface-1 p-12 text-center">
         <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-accent/30 border-t-accent" />
         <p className="mt-3 text-sm text-text-tertiary">
-          Pulling current candidate priorities...
+          Loading your follow-up list...
         </p>
       </div>
     );
@@ -668,10 +670,10 @@ export function TouchpointTable({
                         <div
                           className={
                             canSort
-                              ? `sort-header text-[10px] uppercase tracking-wider font-medium ${
+                              ? `sort-header text-[11px] font-medium ${
                                   sorted ? "sort-header-active" : ""
                                 }`
-                              : "text-[10px] uppercase tracking-wider text-text-tertiary font-medium"
+                              : "text-[11px] font-medium text-text-tertiary"
                           }
                           onClick={
                             canSort ? header.column.getToggleSortingHandler() : undefined
@@ -692,11 +694,10 @@ export function TouchpointTable({
           </thead>
 
           <tbody>
-            {table.getRowModel().rows.map((row, index) => (
+            {table.getRowModel().rows.map((row) => (
               <tr
                 key={row.id}
                 className="grid-row"
-                style={{ animationDelay: `${Math.min(index * 15, 300)}ms` }}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td
@@ -719,7 +720,7 @@ export function TouchpointTable({
             {table.getRowModel().rows.length} clinicians in view
           </span>
           <span className="font-mono text-[10px] text-text-tertiary">
-            ordered by{" "}
+            Sorted by{" "}
             {sorting[0]
               ? `${SORT_LABELS[sorting[0].id] ?? sorting[0].id} ${
                   sorting[0].desc ? "(high to low)" : "(low to high)"

@@ -51,16 +51,16 @@ export function FilterBar({
   searchInputRef,
 }: FilterBarProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface-1 px-4 py-3">
+    <div className="rounded-lg border border-border bg-surface-1 px-3 py-3">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-1 flex-col gap-3 xl:flex-row xl:items-center">
-          <div className="relative w-full max-w-[360px]">
+          <div className="relative w-full max-w-[370px]">
             <input
               ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search clinician, facility, specialty..."
+              placeholder="Search name, facility, or specialty"
               className="w-full rounded-md border border-border bg-surface-0 px-3 py-2 pr-8 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent/40 focus:outline-none"
             />
             {searchQuery && (
@@ -76,8 +76,8 @@ export function FilterBar({
           </div>
 
           <div className="hidden items-center gap-1 xl:flex">
-            <span className="mr-1 text-[10px] uppercase tracking-wider text-text-tertiary">
-              Urgency
+            <span className="mr-1 text-[11px] font-medium text-text-tertiary">
+              Priority
             </span>
             {priorities.map((priority) => (
               <button
@@ -92,7 +92,7 @@ export function FilterBar({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase tracking-wider text-text-tertiary">
+            <span className="text-[11px] font-medium text-text-tertiary">
               Stage
             </span>
             <select
@@ -111,13 +111,13 @@ export function FilterBar({
         </div>
 
         <span className="text-xs font-mono text-text-tertiary">
-          {filteredCount}/{totalCount} in view
+          Showing {filteredCount} of {totalCount}
         </span>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-1 xl:hidden">
-        <span className="mr-1 text-[10px] uppercase tracking-wider text-text-tertiary">
-          Urgency
+        <span className="mr-1 text-[11px] font-medium text-text-tertiary">
+          Priority
         </span>
         {priorities.map((priority) => (
           <button

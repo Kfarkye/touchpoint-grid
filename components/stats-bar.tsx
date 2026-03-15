@@ -21,18 +21,18 @@ const cards = [
 
 export function StatsBar({ stats, loading }: StatsBarProps) {
   return (
-    <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+    <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface-1 lg:grid-cols-5">
       {cards.map((card) => (
         <div
           key={card.key}
-          className="rounded-md border border-border bg-surface-1 px-3 py-2"
+          className="border-b border-r border-border px-3 py-2 last:border-r-0 lg:border-b-0"
         >
-          <div className="text-[10px] uppercase tracking-wider text-text-tertiary">
+          <div className="text-[11px] font-medium text-text-tertiary">
             {card.label}
           </div>
-          <div className={`mt-1 text-xl font-semibold font-mono ${card.color}`}>
+          <div className={`mt-1 text-lg font-semibold font-mono ${card.color}`}>
             {loading ? (
-              <span className="inline-block h-6 w-8 animate-pulse rounded bg-surface-3" />
+              <span className="inline-block h-5 w-8 animate-pulse rounded bg-surface-3" />
             ) : (
               stats[card.key]
             )}

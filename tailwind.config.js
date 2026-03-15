@@ -9,16 +9,16 @@ module.exports = {
     extend: {
       colors: {
         surface: {
-          0: "#eef3f8",
-          1: "#ffffff",
-          2: "#f6f9fc",
-          3: "#e5ecf4",
-          4: "#cfd9e4",
+          0: "#f6f3ee",
+          1: "#fffdf9",
+          2: "#f4eee4",
+          3: "#e8dccd",
+          4: "#d8c6b2",
         },
         accent: {
-          DEFAULT: "#0f766e",
-          muted: "#0f766e1a",
-          dim: "#115e59",
+          DEFAULT: "#1f6a5b",
+          muted: "#1f6a5b1a",
+          dim: "#174f45",
         },
         priority: {
           critical: "#b91c1c",
@@ -28,35 +28,27 @@ module.exports = {
           low: "#047857",
         },
         text: {
-          primary: "#10253b",
-          secondary: "#35516f",
-          tertiary: "#6a8097",
+          primary: "#2d2a26",
+          secondary: "#5b5247",
+          tertiary: "#867a6b",
         },
         border: {
-          DEFAULT: "#d3deea",
-          hover: "#b4c7d9",
+          DEFAULT: "#dfd3c4",
+          hover: "#c9b9a7",
         },
       },
       fontFamily: {
-        sans: ['"SF Pro Display"', '"SF Pro"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'system-ui', 'sans-serif'],
-        mono: ['"SF Mono"', '"Fira Code"', '"JetBrains Mono"', 'Menlo', 'monospace'],
+        sans: [
+          "var(--font-body)",
+          '"Avenir Next"',
+          '"Helvetica Neue"',
+          "sans-serif",
+        ],
+        serif: ["var(--font-headline)", "ui-serif", "serif"],
+        mono: ["var(--font-mono)", "Menlo", "monospace"],
       },
       fontSize: {
         "2xs": ["0.65rem", { lineHeight: "0.875rem" }],
-      },
-      animation: {
-        "fade-in": "fadeIn 0.4s ease-out",
-        "slide-up": "slideUp 0.3s ease-out",
-      },
-      keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        slideUp: {
-          "0%": { opacity: "0", transform: "translateY(8px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
       },
     },
   },

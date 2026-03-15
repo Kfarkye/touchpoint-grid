@@ -14,7 +14,7 @@ function getSupabaseClient(): SupabaseClient {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
-      "Board setup is incomplete for this deployment. Add Supabase URL and anon key in Vercel Project Settings, then redeploy."
+      "This board is not connected yet. Check the deployment settings and refresh."
     );
   }
 
@@ -27,7 +27,8 @@ export async function fetchTouchpointGrid(): Promise<TouchpointRow[]> {
   const { data, error } = await supabase.rpc("get_touchpoint_grid");
 
   if (error) {
-    throw new Error(error.message);
+    console.error("Unable to load follow-up list", error);
+    throw new Error("We couldn't load your follow-up list right now. Please refresh.");
   }
 
   const rows = (data ?? []) as TouchpointRow[];
@@ -55,6 +56,7 @@ export async function logTouch(params: {
   });
 
   if (error) {
-    throw new Error(error.message);
+    console.error("Unable to save touch log", error);
+    throw new Error("We couldn't save that touch. Try again in a moment.");
   }
 }
