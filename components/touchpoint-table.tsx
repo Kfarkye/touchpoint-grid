@@ -30,7 +30,12 @@ interface Props {
   onTouchLogged?: () => Promise<void> | void;
 }
 
-const NOVA_BASE = "https://nova.ayahealthcare.com/#/candidates";
+const NOVA_BASE = "https://nova.ayahealthcare.com/#/recruiting/candidates";
+
+function getNovaHref(novaId: string | null): string | null {
+  if (!novaId) return null;
+  return `${NOVA_BASE}/${novaId}/new-profile/about`;
+}
 
 const SORT_LABELS: Record<string, string> = {
   priority: "priority",
@@ -179,7 +184,7 @@ function SortIcon({ direction }: { direction: false | "asc" | "desc" }) {
 }
 
 function CandidateCell({ row }: { row: TouchpointRow }) {
-  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
+  const novaHref = getNovaHref(row.nova_id);
   const phoneDisplay = hasPhone(row.phone)
     ? formatDisplay(row.phone)
     : "No phone";
@@ -238,7 +243,7 @@ function RowActions({
 
   const emailValue = row.email?.trim() ?? "";
   const emailAvailable = Boolean(emailValue);
-  const novaHref = row.nova_id ? `${NOVA_BASE}/${row.nova_id}` : null;
+  const novaHref = getNovaHref(row.nova_id);
 
   const actionClass =
     "inline-flex h-6 w-6 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-surface-2 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
