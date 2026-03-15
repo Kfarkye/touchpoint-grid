@@ -181,7 +181,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-surface-0">
       <header className="sticky top-0 z-20 border-b border-border bg-surface-0/95 backdrop-blur">
-        <div className="mx-auto flex max-w-[1220px] items-center justify-between px-4 py-2.5 lg:px-6">
+        <div className="mx-auto flex max-w-[1660px] items-center justify-between px-4 py-2.5 lg:px-6">
           <h1 className="font-serif text-[19px] font-semibold tracking-tight text-text-primary">
             Recruiter Follow-Up Desk
           </h1>
@@ -216,7 +216,7 @@ export default function Page() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1220px] space-y-3 px-4 py-3 lg:px-6">
+      <main className="mx-auto max-w-[1660px] space-y-3 px-4 py-3 lg:px-6">
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[13px] text-text-tertiary">
             Priority queue for today&apos;s outreach.
