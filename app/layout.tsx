@@ -3,7 +3,7 @@ import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Candidate Follow-Up Board",
+  title: "Recruiter Follow-Up Desk",
   description: "Daily follow-up desk for recruiter outreach and rebook workflow",
 };
 
