@@ -1,111 +1,100 @@
-# Touchpoint Priority Grid
+# Recruiter Follow-Up Desk (Touchpoint Grid)
 
-Recruiter-facing operational grid that ranks clinicians by outreach urgency using contract lifecycle position + touch recency. Built on Next.js 15 + Vercel + Supabase.
+Recruiter workflow grid that ranks clinicians by outreach urgency using contract timing + touch recency.
 
-## Architecture
+## Current Product State
 
-```
-Supabase RPC (get_touchpoint_grid)
-  → candidates LEFT JOIN assignments LEFT JOIN contact_log LEFT JOIN notes
-  → lifecycle priority curve computed in SQL
-  → returns ranked rows with bucket, priority_level, priority_score, suggested_action
+- Full-width desktop rail (reduced side whitespace)
+- Daylight visual system (warm neutral background, low-chrome UI)
+- Dense table optimized for fast recruiter scanning
+- One-click row actions:
+  - RingCentral call: `rcmobile://call?number={e164}`
+  - RingCentral text: `rcmobile://sms?number={e164}`
+  - Email draft: `mailto:{email}`
+  - Copy phone to clipboard
+  - Open Nova profile:
+    - `https://nova.ayahealthcare.com/#/recruiting/candidates/{nova_id}/new-profile/about`
+- Inline write-back:
+  - `log_touch` RPC from row-level log panel
+- Export currently visible list to CSV
+- Keyboard shortcuts:
+  - `Cmd+K` / `Ctrl+K` focus search
+  - `Esc` clears search and blurs input
 
-Next.js Client
-  → supabase.rpc('get_touchpoint_grid')
-  → TanStack Table (client-side sort/filter — <100 rows)
-  → Tailwind CSS dark theme
-```
-
-## Data Flow
-
-- **78 candidates** in Supabase, **119 assignments** (61 active, 22 pending_start)
-- **11 candidates** have next contract signed → lifecycle suppression active
-- RPC computes all derived fields server-side, client only sorts/filters
-
-## Lifecycle Priority Curve
-
-| Contract Phase | Priority | Touch Cadence |
-|---|---|---|
-| Signed next, weeks 1–7 | Low | Bi-weekly |
-| Signed next, week 8+ | Medium | Weekly |
-| No next, 45+ days left | Standard | Bi-weekly |
-| No next, 30–45 days left | Medium | Weekly |
-| No next, 14–30 days left | High | 2x/week |
-| No next, <14 days left | Critical | Daily |
-| Assignment ended, nothing signed | Critical | Immediate |
-
-## Setup
+## Quick Start
 
 ```bash
 npm install
 cp .env.local.example .env.local
-# Add Supabase anon key to .env.local
+# add your Supabase values
 npm run dev
 ```
 
-## Environment Variables (Vercel)
+## Required Environment Variables
 
-```
+```bash
 NEXT_PUBLIC_SUPABASE_URL=https://hixjxztrblfjbwavyyph.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<your_anon_key>
 ```
 
-## Project Structure
+## Stack
 
-```
+- Next.js 15 (App Router, client-side page)
+- React 19
+- TanStack Table v8
+- Supabase JS v2 (`get_touchpoint_grid`, `log_touch`)
+- Tailwind CSS + Lucide icons
+
+## Data Flow
+
+1. `fetchTouchpointGrid()` calls Supabase RPC `get_touchpoint_grid`
+2. Rows are normalized client-side (`phone`, `email` fallback to empty string)
+3. Client applies search + filters + sort
+4. Table renders prioritized list with row-level actions
+5. `logTouch()` calls Supabase RPC `log_touch`
+6. On success, grid refreshes and re-ranks
+
+## Table UX
+
+- Suggested action is in tooltip (priority badge / stage context)
+- Action column is icon-first to preserve horizontal density
+- Horizontal scroll below desktop widths
+- Empty state includes clear filter + refresh actions
+- Connection state includes a user-friendly retry path
+
+## Theme + Type
+
+- Warm light palette from `tailwind.config.js`
+- Typography:
+  - Body: Manrope
+  - Headlines: Source Serif 4
+  - Data: IBM Plex Mono
+
+## File Map
+
+```txt
 app/
-  layout.tsx          — root layout, font loading, metadata
-  page.tsx            — main page, data fetching, filter state
-  globals.css         — tailwind base + custom component classes
+  layout.tsx                 # metadata + font setup
+  page.tsx                   # load, filter, export, empty/error states
+  globals.css                # global + component utility styles
 components/
-  touchpoint-table.tsx — TanStack Table grid with all column defs
-  stats-bar.tsx       — top KPI cards (critical, high, needs touch, etc.)
-  filter-bar.tsx      — priority pills, bucket pills, search input
+  touchpoint-table.tsx       # columns, row actions, log panel
+  filter-bar.tsx             # search + priority + stage filters
+  stats-bar.tsx              # compact KPI strip
+  quick-links.tsx            # available, currently not mounted
 lib/
-  supabase.ts         — client singleton + RPC fetch function
-  types.ts            — TypeScript types, priority config, bucket labels
+  supabase.ts                # Supabase client + RPC helpers
+  phone.ts                   # e164 + display formatting + validation
+  types.ts                   # row model, labels, priority config
 ```
 
-## Supabase RPC Reference
+## Build Check
 
-**Function:** `get_touchpoint_grid()`
-**Returns:** Table with columns:
+```bash
+npm run build
+```
 
-| Column | Type | Description |
-|---|---|---|
-| candidate_id | uuid | Primary key |
-| nova_id | text | Nova VMS ID |
-| candidate_name | text | First + Last |
-| phone | text | Contact number |
-| specialty | text | e.g. Respiratory Therapy |
-| current_facility | text | Active assignment facility |
-| assignment_end | date | Current contract end date |
-| has_next_assignment | boolean | Lifecycle suppression flag |
-| next_facility | text | Signed next facility name |
-| days_to_end | integer | Calendar days to assignment end |
-| week_of_contract | integer | Current week number |
-| weeks_remaining | numeric | Weeks until end |
-| bucket | text | Classification bucket |
-| priority_level | text | critical/high/medium/standard/low |
-| priority_score | numeric | 0–100, higher = more urgent |
-| suggested_action | text | Plain English next step |
-| days_since_touch | integer | Days since last contact_log or note |
+## Notes
 
-## Design System
-
-- **Theme:** Dark (surface-0 through surface-4)
-- **Accent:** Cyan (#22d3ee) — matches The Drip internal tools
-- **Priority colors:** Red (critical), Orange (high), Yellow (medium), Zinc (standard), Emerald (low)
-- **Typography:** System SF Pro stack with DM Sans fallback, monospace for data
-- **Aesthetic:** Linear/Vercel clarity — minimal chrome, data-dense, scannable
-
-## Codex Refinement Tasks
-
-1. Verify `npm run build` succeeds with zero errors
-2. Add keyboard shortcut (Cmd+K) for search focus
-3. Add click-to-copy on phone number cells
-4. Add row expansion for full suggested_action + notes preview
-5. Add CSV export button (client-side, no server needed)
-6. Add column visibility toggle (hide/show columns)
-7. Test responsive layout at 1280px and 1440px breakpoints
-8. Add empty state illustration when filters return zero rows
+- If Supabase env vars are missing, the UI shows a user-safe connection message.
+- This repository includes `PRODUCT_RULES.md` as the copy/design quality floor.
