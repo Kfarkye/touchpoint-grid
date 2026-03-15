@@ -102,7 +102,7 @@ function ScoreBar({ score }: { score: number }) {
 
   return (
     <div className="flex items-center gap-1">
-      <div className="h-1.5 w-12 overflow-hidden rounded-full bg-surface-3">
+      <div className="h-1.5 w-11 overflow-hidden rounded-full bg-surface-3">
         <div
           className={`h-full rounded-full ${color} transition-all duration-500`}
           style={{ width: `${Math.min(100, score)}%` }}
@@ -298,7 +298,7 @@ function RowActions({
   };
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1">
       <div className="flex items-center gap-1">
         <button
           type="button"
@@ -381,7 +381,7 @@ function RowActions({
       </div>
 
       {logOpen && (
-        <div className="w-[240px] rounded-md border border-border bg-surface-2 p-2">
+        <div className="w-[232px] rounded-md border border-border bg-surface-2 p-2">
           <div className="mb-1.5 flex items-center justify-between">
             <span className="text-[11px] font-medium text-text-tertiary">
               Log Follow-Up
@@ -482,7 +482,7 @@ function useColumns(
             suggestedAction={row.original.suggested_action}
           />
         ),
-        size: 95,
+        size: 92,
         sortingFn: "basic",
       },
       {
@@ -490,7 +490,7 @@ function useColumns(
         header: "Need Score",
         accessorKey: "priority_score",
         cell: ({ row }) => <ScoreBar score={row.original.priority_score} />,
-        size: 105,
+        size: 98,
         sortingFn: "basic",
       },
       {
@@ -498,7 +498,7 @@ function useColumns(
         header: "Clinician",
         accessorKey: "candidate_name",
         cell: ({ row }) => <CandidateCell row={row.original} />,
-        size: 240,
+        size: 232,
         sortingFn: "text",
       },
       {
@@ -506,7 +506,7 @@ function useColumns(
         header: "Facility",
         accessorKey: "current_facility",
         cell: ({ row }) => (
-          <div className="max-w-[190px]">
+          <div className="max-w-[180px]">
             <div className="truncate text-[13px] text-text-secondary">
               {row.original.current_facility ?? "—"}
             </div>
@@ -517,7 +517,7 @@ function useColumns(
             )}
           </div>
         ),
-        size: 190,
+        size: 180,
         sortingFn: "text",
       },
       {
@@ -530,7 +530,7 @@ function useColumns(
             hasNext={row.original.has_next_assignment}
           />
         ),
-        size: 78,
+        size: 76,
         sortingFn: "basic",
       },
       {
@@ -552,14 +552,14 @@ function useColumns(
           ) : (
             <span className="text-text-tertiary">—</span>
           ),
-        size: 72,
+        size: 68,
       },
       {
         id: "lifecycle",
         header: "Next Job",
         accessorFn: (row) => (row.has_next_assignment ? 1 : 0),
         cell: ({ row }) => <LifecycleTag row={row.original} />,
-        size: 132,
+        size: 126,
         sortingFn: "basic",
       },
       {
@@ -583,7 +583,7 @@ function useColumns(
             </div>
           );
         },
-        size: 92,
+        size: 86,
         sortingFn: "basic",
       },
       {
@@ -598,7 +598,7 @@ function useColumns(
             {BUCKET_LABELS[row.original.bucket as Bucket] ?? row.original.bucket}
           </span>
         ),
-        size: 118,
+        size: 110,
         sortingFn: "text",
       },
       {
@@ -608,7 +608,7 @@ function useColumns(
         cell: ({ row }) => (
           <RowActions row={row.original} onTouchLogged={onTouchLogged} />
         ),
-        size: 210,
+        size: 194,
         enableSorting: false,
       },
     ],
@@ -654,7 +654,7 @@ export function TouchpointTable({
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
       <div className="overflow-x-auto xl:overflow-x-visible">
-        <table className="w-full min-w-[1188px] xl:min-w-0">
+        <table className="w-full min-w-[1148px] xl:min-w-0">
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id} className="border-b border-border">
@@ -665,7 +665,7 @@ export function TouchpointTable({
                   return (
                     <th
                       key={header.id}
-                      className="sticky top-0 z-10 bg-surface-1 px-2.5 py-2 text-left"
+                      className="sticky top-0 z-10 bg-surface-1 px-2 py-[7px] text-left"
                       style={{ width: header.getSize() }}
                     >
                       {header.isPlaceholder ? null : (
@@ -704,7 +704,7 @@ export function TouchpointTable({
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className="px-2.5 py-1.5 align-middle"
+                    className="px-2 py-[5px] align-middle"
                     style={{ width: cell.column.getSize() }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -717,7 +717,7 @@ export function TouchpointTable({
       </div>
 
       {data.length > 0 && (
-        <div className="flex items-center justify-between border-t border-border px-3 py-2">
+        <div className="flex items-center justify-between border-t border-border px-2.5 py-1.5">
           <span className="text-[10px] text-text-tertiary">
             {table.getRowModel().rows.length} clinicians in view
           </span>
