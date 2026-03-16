@@ -16,6 +16,8 @@ Recruiter workflow grid that ranks clinicians by outreach urgency using contract
     - `https://nova.ayahealthcare.com/#/recruiting/candidates/{nova_id}/new-profile/about`
 - Inline write-back:
   - `log_touch` RPC from row-level log panel
+  - `set_followup` RPC from row-level snooze panel
+  - `update_candidate_field` RPC for unsnooze
 - Export currently visible list to CSV
 - Keyboard shortcuts:
   - `Cmd+K` / `Ctrl+K` focus search
@@ -43,6 +45,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<your_anon_key>
 - React 19
 - TanStack Table v8
 - Supabase JS v2 (`get_touchpoint_grid`, `log_touch`)
+- Supabase SQL migration tracked in repo (`set_followup`)
 - Tailwind CSS + Lucide icons
 
 ## Data Flow
@@ -52,7 +55,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<your_anon_key>
 3. Client applies search + filters + sort
 4. Table renders prioritized list with row-level actions
 5. `logTouch()` calls Supabase RPC `log_touch`
-6. On success, grid refreshes and re-ranks
+6. `snoozeCandidate()` calls Supabase RPC `set_followup`
+7. `unsnoozeCandidate()` calls Supabase RPC `update_candidate_field`
+8. On success, grid refreshes and re-ranks
 
 ## Table UX
 
@@ -93,6 +98,15 @@ lib/
 ```bash
 npm run build
 ```
+
+## Backend Artifacts
+
+- Migration SQL:
+  - `supabase/migrations/20260315193000_add_set_followup_rpc.sql`
+- Backend task guide:
+  - `docs/BACKEND_AGENT_TASK.md`
+- Live RPC validation script:
+  - `scripts/validate-followup-rpcs.sh`
 
 ## Notes
 
