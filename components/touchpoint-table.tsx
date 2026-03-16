@@ -10,9 +10,24 @@ import {
   type SortingState,
   flexRender,
 } from "@tanstack/react-table";
-import { Check, Copy, ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
+import {
+  AlarmClockOff,
+  Check,
+  Clock,
+  Copy,
+  ExternalLink,
+  Mail,
+  MessageSquare,
+  Phone,
+} from "lucide-react";
 import { formatDisplay, hasPhone, toE164 } from "@/lib/phone";
-import { logTouch, type TouchChannel, type TouchOutcome } from "@/lib/supabase";
+import {
+  logTouch,
+  snoozeCandidate,
+  unsnoozeCandidate,
+  type TouchChannel,
+  type TouchOutcome,
+} from "@/lib/supabase";
 import {
   BUCKET_LABELS,
   PRIORITY_CONFIG,
@@ -27,7 +42,7 @@ interface Props {
   sorting: SortingState;
   onSortingChange: OnChangeFn<SortingState>;
   onVisibleRowsChange?: (rows: TouchpointRow[]) => void;
-  onTouchLogged?: () => Promise<void> | void;
+  onRefresh?: () => Promise<void> | void;
 }
 
 const NOVA_BASE = "https://nova.ayahealthcare.com/#/recruiting/candidates";
@@ -60,6 +75,37 @@ const OUTCOME_OPTIONS: Array<{ value: TouchOutcome; label: string }> = [
   { value: "voicemail", label: "Voicemail" },
   { value: "no_answer", label: "No Answer" },
 ];
+
+const SNOOZE_PRESETS = [
+  { label: "1 Week", days: 7 },
+  { label: "2 Weeks", days: 14 },
+  { label: "1 Month", days: 30 },
+  { label: "2 Months", days: 60 },
+] as const;
+
+const SNOOZE_REASON_OPTIONS = [
+  "Not traveling right now, check back later",
+  "Waiting on candidate to confirm availability",
+  "Set follow-up in Nova",
+  "Extension pending, waiting on facility",
+] as const;
+
+const CUSTOM_REASON_VALUE = "__custom_reason__";
+
+function isoDateFromToday(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatDueDate(value: string | null): string | null {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return date.toLocaleDateString([], { month: "short", day: "numeric" });
+}
 
 function PriorityBadge({
   level,
@@ -223,22 +269,29 @@ function CandidateCell({ row }: { row: TouchpointRow }) {
 
 function RowActions({
   row,
-  onTouchLogged,
+  onRefresh,
 }: {
   row: TouchpointRow;
-  onTouchLogged?: () => Promise<void> | void;
+  onRefresh?: () => Promise<void> | void;
 }) {
   const [copied, setCopied] = useState(false);
   const [logOpen, setLogOpen] = useState(false);
+  const [snoozeOpen, setSnoozeOpen] = useState(false);
   const [channel, setChannel] = useState<TouchChannel>("phone");
   const [outcome, setOutcome] = useState<TouchOutcome>("connected");
   const [note, setNote] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string>(() => isoDateFromToday(7));
+  const [reasonValue, setReasonValue] = useState<string>(SNOOZE_REASON_OPTIONS[0]);
+  const [customReason, setCustomReason] = useState("");
   const [savingLog, setSavingLog] = useState(false);
+  const [savingSnooze, setSavingSnooze] = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
+  const [snoozeError, setSnoozeError] = useState<string | null>(null);
 
   const phoneRaw = row.phone ?? "";
   const phoneAvailable = hasPhone(phoneRaw);
   const phoneE164 = phoneAvailable ? toE164(phoneRaw) : "";
+  const snoozeDueLabel = formatDueDate(row.next_touch_due);
   const phoneTel = phoneRaw.replace(/\s+/g, "");
 
   const emailValue = row.email?.trim() ?? "";
@@ -292,13 +345,73 @@ function RowActions({
 
       setLogOpen(false);
       setNote("");
-      await onTouchLogged?.();
+      await onRefresh?.();
     } catch (error: unknown) {
       setLogError(
         error instanceof Error ? error.message : "We couldn't save that touch. Try again."
       );
     } finally {
       setSavingLog(false);
+    }
+  };
+
+  const onToggleSnooze = () => {
+    setSnoozeError(null);
+    setSnoozeOpen((current) => !current);
+    setLogOpen(false);
+    if (!row.is_snoozed) {
+      setSelectedDate(isoDateFromToday(7));
+      setReasonValue(SNOOZE_REASON_OPTIONS[0]);
+      setCustomReason("");
+    }
+  };
+
+  const submitSnooze = async () => {
+    if (savingSnooze) return;
+
+    const resolvedReason =
+      reasonValue === CUSTOM_REASON_VALUE ? customReason.trim() : reasonValue.trim();
+    if (!resolvedReason) {
+      setSnoozeError("Add a reason before saving.");
+      return;
+    }
+
+    setSavingSnooze(true);
+    setSnoozeError(null);
+
+    try {
+      await snoozeCandidate({
+        candidateId: row.candidate_id,
+        dueDate: selectedDate,
+        reason: resolvedReason,
+      });
+      setSnoozeOpen(false);
+      await onRefresh?.();
+    } catch (error: unknown) {
+      setSnoozeError(
+        error instanceof Error ? error.message : "We couldn't set that follow-up date."
+      );
+    } finally {
+      setSavingSnooze(false);
+    }
+  };
+
+  const submitUnsnooze = async () => {
+    if (savingSnooze) return;
+
+    setSavingSnooze(true);
+    setSnoozeError(null);
+
+    try {
+      await unsnoozeCandidate(row.candidate_id);
+      setSnoozeOpen(false);
+      await onRefresh?.();
+    } catch (error: unknown) {
+      setSnoozeError(
+        error instanceof Error ? error.message : "We couldn't clear that snooze."
+      );
+    } finally {
+      setSavingSnooze(false);
     }
   };
 
@@ -372,9 +485,24 @@ function RowActions({
 
         <button
           type="button"
+          onClick={onToggleSnooze}
+          disabled={savingSnooze}
+          title={row.is_snoozed ? "Unsnooze" : "Snooze"}
+          className={actionClass}
+        >
+          {row.is_snoozed ? (
+            <AlarmClockOff className="h-3.5 w-3.5" />
+          ) : (
+            <Clock className="h-3.5 w-3.5" />
+          )}
+        </button>
+
+        <button
+          type="button"
           onClick={() => {
             if (!canLogChannel(channel)) return;
             setLogError(null);
+            setSnoozeOpen(false);
             setLogOpen((current) => !current);
           }}
           disabled={!canLogChannel(channel)}
@@ -468,12 +596,138 @@ function RowActions({
           </div>
         </div>
       )}
+
+      {snoozeOpen && (
+        <div className="w-[232px] rounded-md border border-border bg-surface-2 p-2">
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[11px] font-medium text-text-tertiary">
+              {row.is_snoozed ? "Snoozed Follow-Up" : "Snooze Follow-Up"}
+            </span>
+            <button
+              type="button"
+              onClick={() => setSnoozeOpen(false)}
+              className="text-[10px] text-text-tertiary hover:text-text-secondary"
+            >
+              Close
+            </button>
+          </div>
+
+          {row.is_snoozed ? (
+            <div className="space-y-2">
+              <div className="rounded border border-border bg-surface-1 px-2 py-1.5">
+                <p className="text-[10px] text-text-tertiary">
+                  Due {snoozeDueLabel ?? "scheduled"}
+                </p>
+                <p
+                  title={row.followup_reason ?? undefined}
+                  className="truncate text-[11px] text-text-secondary"
+                >
+                  {row.followup_reason ?? "Follow-up scheduled"}
+                </p>
+              </div>
+
+              {snoozeError && <p className="text-[10px] text-red-700">{snoozeError}</p>}
+
+              <div className="flex items-center justify-end gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setSnoozeOpen(false)}
+                  className="rounded border border-border px-2 py-1 text-[10px] text-text-secondary hover:border-border-hover hover:text-text-primary"
+                >
+                  Keep Snooze
+                </button>
+                <button
+                  type="button"
+                  onClick={submitUnsnooze}
+                  disabled={savingSnooze}
+                  className="rounded border border-accent/40 bg-accent/10 px-2 py-1 text-[10px] text-accent hover:border-accent disabled:opacity-50"
+                >
+                  {savingSnooze ? "Updating..." : "Unsnooze"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mb-2 flex flex-wrap items-center gap-1">
+                {SNOOZE_PRESETS.map((preset) => {
+                  const presetDate = isoDateFromToday(preset.days);
+                  const selected = presetDate === selectedDate;
+
+                  return (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => setSelectedDate(presetDate)}
+                      className={`rounded border px-1.5 py-0.5 text-[10px] ${
+                        selected
+                          ? "border-accent/40 bg-accent/10 text-accent"
+                          : "border-border text-text-secondary"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-medium text-text-tertiary">
+                  Reason
+                </label>
+                <select
+                  value={reasonValue}
+                  onChange={(event) => setReasonValue(event.target.value)}
+                  className="w-full rounded border border-border bg-surface-1 px-2 py-1 text-[11px] text-text-primary focus:border-accent/40 focus:outline-none"
+                >
+                  {SNOOZE_REASON_OPTIONS.map((reason) => (
+                    <option key={reason} value={reason}>
+                      {reason}
+                    </option>
+                  ))}
+                  <option value={CUSTOM_REASON_VALUE}>Custom...</option>
+                </select>
+
+                {reasonValue === CUSTOM_REASON_VALUE && (
+                  <input
+                    type="text"
+                    value={customReason}
+                    onChange={(event) => setCustomReason(event.target.value)}
+                    placeholder="Type custom follow-up reason"
+                    className="w-full rounded border border-border bg-surface-1 px-2 py-1 text-[11px] text-text-primary placeholder:text-text-tertiary focus:border-accent/40 focus:outline-none"
+                    maxLength={220}
+                  />
+                )}
+
+                {snoozeError && <p className="text-[10px] text-red-700">{snoozeError}</p>}
+
+                <div className="mt-1.5 flex items-center justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setSnoozeOpen(false)}
+                    className="rounded border border-border px-2 py-1 text-[10px] text-text-secondary hover:border-border-hover hover:text-text-primary"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={submitSnooze}
+                    disabled={savingSnooze}
+                    className="rounded border border-accent/40 bg-accent/10 px-2 py-1 text-[10px] text-accent hover:border-accent disabled:opacity-50"
+                  >
+                    {savingSnooze ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
 function useColumns(
-  onTouchLogged?: () => Promise<void> | void
+  onRefresh?: () => Promise<void> | void
 ): ColumnDef<TouchpointRow>[] {
   return useMemo(
     () => [
@@ -595,15 +849,33 @@ function useColumns(
         id: "bucket",
         header: "Stage",
         accessorKey: "bucket",
-        cell: ({ row }) => (
-          <span
-            title={row.original.suggested_action}
-            className="text-[10px] text-text-tertiary"
-          >
-            {BUCKET_LABELS[row.original.bucket as Bucket] ?? row.original.bucket}
-          </span>
-        ),
-        size: 110,
+        cell: ({ row }) => {
+          const dueLabel = formatDueDate(row.original.next_touch_due);
+          const stageLabel = BUCKET_LABELS[row.original.bucket as Bucket] ?? row.original.bucket;
+
+          if (row.original.is_snoozed && dueLabel) {
+            const reasonLabel = (row.original.followup_reason ?? "Follow-up scheduled").trim();
+            return (
+              <div className="max-w-[140px] leading-tight">
+                <span
+                  className="block truncate text-[10px] text-text-tertiary"
+                >
+                  Snoozed {"->"} {dueLabel}
+                </span>
+                <span title={reasonLabel} className="mt-0.5 block truncate text-[10px] text-text-tertiary/80">
+                  {reasonLabel}
+                </span>
+              </div>
+            );
+          }
+
+          return (
+            <span title={row.original.suggested_action} className="text-[10px] text-text-tertiary">
+              {stageLabel}
+            </span>
+          );
+        },
+        size: 148,
         sortingFn: "text",
       },
       {
@@ -611,13 +883,13 @@ function useColumns(
         header: "Actions",
         accessorFn: (row) => row.phone,
         cell: ({ row }) => (
-          <RowActions row={row.original} onTouchLogged={onTouchLogged} />
+          <RowActions row={row.original} onRefresh={onRefresh} />
         ),
-        size: 194,
+        size: 210,
         enableSorting: false,
       },
     ],
-    [onTouchLogged]
+    [onRefresh]
   );
 }
 
@@ -627,9 +899,9 @@ export function TouchpointTable({
   sorting,
   onSortingChange,
   onVisibleRowsChange,
-  onTouchLogged,
+  onRefresh,
 }: Props) {
-  const columns = useColumns(onTouchLogged);
+  const columns = useColumns(onRefresh);
 
   const table = useReactTable({
     data,

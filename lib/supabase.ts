@@ -36,6 +36,9 @@ export async function fetchTouchpointGrid(): Promise<TouchpointRow[]> {
     ...row,
     phone: row.phone ?? "",
     email: row.email ?? "",
+    is_snoozed: Boolean(row.is_snoozed),
+    next_touch_due: row.next_touch_due ?? null,
+    followup_reason: row.followup_reason ?? null,
   }));
 }
 
@@ -58,5 +61,37 @@ export async function logTouch(params: {
   if (error) {
     console.error("Unable to save touch log", error);
     throw new Error("We couldn't save that touch. Try again in a moment.");
+  }
+}
+
+export async function snoozeCandidate(params: {
+  candidateId: string;
+  dueDate: string;
+  reason: string;
+}): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.rpc("set_followup", {
+    p_candidate_id: params.candidateId,
+    p_due_date: params.dueDate,
+    p_reason: params.reason,
+  });
+
+  if (error) {
+    console.error("Unable to snooze candidate", error);
+    throw new Error("We couldn't set that follow-up date. Try again.");
+  }
+}
+
+export async function unsnoozeCandidate(candidateId: string): Promise<void> {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.rpc("update_candidate_field", {
+    p_candidate_id: candidateId,
+    p_field: "next_touch_due",
+    p_value: null,
+  });
+
+  if (error) {
+    console.error("Unable to clear follow-up date", error);
+    throw new Error("We couldn't clear that snooze. Try again.");
   }
 }

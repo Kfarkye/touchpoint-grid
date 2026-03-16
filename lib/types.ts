@@ -19,6 +19,9 @@ export interface TouchpointRow {
   next_end: string | null;
   last_touch_date: string | null;
   last_touch_channel: string | null;
+  is_snoozed: boolean;
+  next_touch_due: string | null;
+  followup_reason: string | null;
   days_since_touch: number;
   days_to_end: number | null;
   week_of_contract: number | null;
