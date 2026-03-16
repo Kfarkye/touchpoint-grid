@@ -304,16 +304,51 @@ function RowActions({
   const canLogChannel = (nextChannel: TouchChannel) =>
     nextChannel === "email" ? emailAvailable : phoneAvailable;
 
-  const onCall = () => {
+  const launchRingCentral = (mode: "call" | "sms") => {
     if (!phoneAvailable) return;
 
-    setChannel("phone");
-    window.location.href = `rcmobile://call?number=${phoneE164}`;
-    window.setTimeout(() => {
-      if (document.visibilityState === "visible") {
-        window.location.href = `tel:${phoneTel}`;
+    const primaryUri = `rcmobile://${mode}?number=${phoneE164}`;
+    const fallbackUri = mode === "call" ? `tel:${phoneTel}` : `sms:${phoneTel}`;
+    let appOpened = false;
+
+    const onBlur = () => {
+      appOpened = true;
+      cleanup();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        appOpened = true;
+        cleanup();
       }
-    }, 700);
+    };
+
+    const cleanup = () => {
+      window.removeEventListener("blur", onBlur);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+
+    window.addEventListener("blur", onBlur);
+    document.addEventListener("visibilitychange", onVisibility);
+
+    window.location.href = primaryUri;
+
+    window.setTimeout(() => {
+      cleanup();
+      if (!appOpened && document.visibilityState === "visible") {
+        window.location.href = fallbackUri;
+      }
+    }, 1100);
+  };
+
+  const onCall = () => {
+    setChannel("phone");
+    launchRingCentral("call");
+  };
+
+  const onText = () => {
+    setChannel("text");
+    launchRingCentral("sms");
   };
 
   const onCopy = async () => {
@@ -422,29 +457,23 @@ function RowActions({
           type="button"
           onClick={onCall}
           disabled={!phoneAvailable}
-          title="Call"
+          title="Call in RingCentral"
           className={actionClass}
         >
           <Phone className="h-3.5 w-3.5" />
         </button>
 
-        <a
-          href={phoneAvailable ? `rcmobile://sms?number=${phoneE164}` : undefined}
-          title="Text"
+        <button
+          type="button"
+          onClick={onText}
+          title="Text in RingCentral"
           className={`${actionClass} ${
             !phoneAvailable ? "pointer-events-none cursor-not-allowed opacity-30" : ""
           }`}
-          aria-disabled={!phoneAvailable}
-          onClick={(event) => {
-            if (!phoneAvailable) {
-              event.preventDefault();
-              return;
-            }
-            setChannel("text");
-          }}
+          disabled={!phoneAvailable}
         >
           <MessageSquare className="h-3.5 w-3.5" />
-        </a>
+        </button>
 
         <button
           type="button"
