@@ -299,7 +299,7 @@ function RowActions({
   const novaHref = getNovaHref(row.nova_id);
 
   const actionClass =
-    "inline-flex h-6 w-6 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-surface-2 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+    "inline-flex h-6 w-6 items-center justify-center rounded border border-transparent text-text-tertiary transition-colors hover:border-border hover:bg-surface-2 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
 
   const canLogChannel = (nextChannel: TouchChannel) =>
     nextChannel === "email" ? emailAvailable : phoneAvailable;
@@ -452,7 +452,7 @@ function RowActions({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5">
         <button
           type="button"
           onClick={onCall}
@@ -535,7 +535,7 @@ function RowActions({
             setLogOpen((current) => !current);
           }}
           disabled={!canLogChannel(channel)}
-          className="ml-0.5 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
+          className="ml-1 rounded border border-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:border-accent/40 hover:text-accent disabled:cursor-not-allowed disabled:opacity-30"
           title={`Log ${CHANNEL_LABELS[channel]}`}
         >
           Log
@@ -958,7 +958,7 @@ export function TouchpointTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-surface-1">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-1 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
       <div className="overflow-x-auto xl:overflow-x-visible">
         <table className="w-full min-w-[1148px] xl:min-w-0">
           <thead>
@@ -971,17 +971,17 @@ export function TouchpointTable({
                   return (
                     <th
                       key={header.id}
-                      className="sticky top-0 z-10 bg-surface-1 px-2 py-[7px] text-left"
+                      className="sticky top-0 z-10 bg-surface-1/95 px-2 py-[6px] text-left backdrop-blur"
                       style={{ width: header.getSize() }}
                     >
                       {header.isPlaceholder ? null : (
                         <div
                           className={
                             canSort
-                              ? `sort-header text-[11px] font-medium ${
+                              ? `sort-header text-[10px] uppercase tracking-wide font-medium ${
                                   sorted ? "sort-header-active" : ""
                                 }`
-                              : "text-[11px] font-medium text-text-tertiary"
+                              : "text-[10px] uppercase tracking-wide font-medium text-text-tertiary"
                           }
                           onClick={
                             canSort ? header.column.getToggleSortingHandler() : undefined
@@ -1002,15 +1002,15 @@ export function TouchpointTable({
           </thead>
 
           <tbody>
-            {table.getRowModel().rows.map((row) => (
+            {table.getRowModel().rows.map((row, index) => (
               <tr
                 key={row.id}
-                className="grid-row"
+                className={`grid-row ${index % 2 ? "bg-surface-2/35" : ""}`}
               >
                 {row.getVisibleCells().map((cell) => (
                   <td
                     key={cell.id}
-                    className="px-2 py-[5px] align-middle"
+                    className="px-2 py-1 align-middle"
                     style={{ width: cell.column.getSize() }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -1023,7 +1023,7 @@ export function TouchpointTable({
       </div>
 
       {data.length > 0 && (
-        <div className="flex items-center justify-between border-t border-border px-2.5 py-1.5">
+        <div className="flex items-center justify-between border-t border-border bg-surface-2/40 px-2.5 py-1.5">
           <span className="text-[10px] text-text-tertiary">
             {table.getRowModel().rows.length} clinicians in view
           </span>

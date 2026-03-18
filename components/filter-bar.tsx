@@ -51,7 +51,7 @@ export function FilterBar({
   searchInputRef,
 }: FilterBarProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface-1 px-3 py-2.5">
+    <div className="rounded-lg border border-border bg-surface-1 px-3 py-2.5 shadow-[0_1px_0_rgba(15,23,42,0.03)]">
       <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-1 flex-col gap-2.5 xl:flex-row xl:items-center">
           <div className="relative w-full max-w-[370px]">
@@ -60,9 +60,9 @@ export function FilterBar({
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search name, facility, or specialty"
-              className="w-full rounded-md border border-border bg-surface-0 px-3 py-2 pr-8 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent/40 focus:outline-none"
-            />
+            placeholder="Search clinician, facility, or specialty"
+            className="w-full rounded-md border border-border bg-surface-0 px-3 py-2 pr-8 text-sm text-text-primary placeholder:text-text-tertiary focus:border-accent/40 focus:outline-none"
+          />
             {searchQuery && (
               <button
                 type="button"
@@ -89,6 +89,9 @@ export function FilterBar({
           </div>
 
           <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wide text-text-tertiary">
+              Stage
+            </span>
             <select
               value={bucketFilter}
               onChange={(event) => setBucketFilter(event.target.value)}
@@ -105,7 +108,7 @@ export function FilterBar({
         </div>
 
         <span className="text-xs font-mono text-text-tertiary">
-          Showing {filteredCount} of {totalCount}
+          Showing {filteredCount} / {totalCount}
         </span>
       </div>
 

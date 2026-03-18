@@ -268,6 +268,21 @@ export default function Page() {
                 We can’t pull live clinician data yet. Once the board connection is finished,
                 your follow-up list will appear here.
               </p>
+              <div className="mt-3 rounded-md border border-amber-200 bg-white px-3 py-2">
+                <p className="text-[11px] font-medium text-amber-900">
+                  Deployment checklist
+                </p>
+                <ul className="mt-1 space-y-1 text-[11px] text-amber-800">
+                  <li>
+                    Add <code className="font-mono">NEXT_PUBLIC_SUPABASE_URL</code>
+                  </li>
+                  <li>
+                    Add <code className="font-mono">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>
+                  </li>
+                  <li>Apply to both Preview and Production environments</li>
+                  <li>Redeploy the latest build</li>
+                </ul>
+              </div>
               <button
                 type="button"
                 onClick={loadData}
