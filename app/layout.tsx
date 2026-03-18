@@ -3,8 +3,8 @@ import { IBM_Plex_Mono, Manrope, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Recruiter Follow-Up Desk",
-  description: "Daily follow-up desk for recruiter outreach and rebook workflow",
+  title: "Recruiter Market Board",
+  description: "Live follow-up market board for recruiter outreach and rebook workflows",
 };
 
 const body = Manrope({

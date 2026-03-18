@@ -10,7 +10,11 @@
 
   body {
     @apply text-text-primary;
-    background-color: #f6f3ee;
+    background-color: #f5f7fb;
+    background-image:
+      radial-gradient(1000px 420px at 90% -5%, rgba(43, 87, 245, 0.08), transparent 60%),
+      radial-gradient(800px 320px at -10% -20%, rgba(15, 23, 42, 0.05), transparent 60%);
+    background-attachment: fixed;
   }
 
   /* Scrollbar */
@@ -35,7 +39,7 @@
     @apply border-b border-border transition-colors duration-150;
   }
   .grid-row:hover {
-    @apply bg-surface-2;
+    @apply bg-surface-3/60;
   }
 
   /* Filter tabs */
@@ -43,13 +47,13 @@
     @apply px-2.5 py-1 rounded text-xs font-medium
            border border-border text-text-secondary
            transition-colors duration-150 cursor-pointer select-none
-           bg-surface-0;
+           bg-surface-1;
   }
   .pill:hover {
     @apply border-border-hover text-text-primary;
   }
   .pill-active {
-    @apply bg-surface-1 border-accent/50 text-accent;
+    @apply bg-accent/10 border-accent/40 text-accent;
   }
 
   /* Sort header */

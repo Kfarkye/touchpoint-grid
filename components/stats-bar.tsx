@@ -21,13 +21,13 @@ const cards = [
 
 export function StatsBar({ stats, loading }: StatsBarProps) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface-1 lg:grid-cols-5">
+    <div className="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-surface-1 shadow-[0_1px_0_rgba(15,23,42,0.03)] lg:grid-cols-5">
       {cards.map((card) => (
         <div
           key={card.key}
-          className="border-b border-r border-border px-3 py-2 last:border-r-0 lg:border-b-0"
+          className="border-b border-r border-border px-3 py-2.5 last:border-r-0 lg:border-b-0"
         >
-          <div className="text-[10px] text-text-tertiary">
+          <div className="text-[10px] uppercase tracking-wide text-text-tertiary">
             {card.label}
           </div>
           <div className={`mt-0.5 text-base font-semibold font-mono ${card.color}`}>

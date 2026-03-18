@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SortingState } from "@tanstack/react-table";
 import { Download } from "lucide-react";
 import { FilterBar } from "@/components/filter-bar";
+import { QuickLinks } from "@/components/quick-links";
 import { StatsBar } from "@/components/stats-bar";
 import { TouchpointTable } from "@/components/touchpoint-table";
 import { formatDisplay } from "@/lib/phone";
@@ -180,10 +181,10 @@ export default function Page() {
 
   return (
     <div className="min-h-screen bg-surface-0">
-      <header className="sticky top-0 z-20 border-b border-border bg-surface-0/95 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border bg-surface-1/90 backdrop-blur">
         <div className="flex w-full items-center justify-between px-3 py-2.5 md:px-4 lg:px-5">
-          <h1 className="font-serif text-[19px] font-semibold tracking-tight text-text-primary">
-            Recruiter Follow-Up Desk
+          <h1 className="text-[18px] font-semibold tracking-tight text-text-primary">
+            Recruiter Market Board
           </h1>
 
           <div className="flex items-center gap-2 sm:gap-3">
@@ -217,18 +218,30 @@ export default function Page() {
       </header>
 
       <main className="w-full space-y-3 px-3 py-3 md:px-4 lg:px-5">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[13px] text-text-tertiary">
-            Priority queue for today&apos;s outreach.
-          </p>
-          <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
-            <span className="rounded border border-border bg-surface-1 px-2 py-1">
-              {exportRows.length} in view
-            </span>
-            <span className="rounded border border-border bg-surface-1 px-2 py-1">
-              {stats.critical} urgent now
-            </span>
+        <div className="rounded-lg border border-border bg-surface-1 px-3 py-2.5">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-[13px] text-text-secondary">
+              Today&apos;s follow-up market, ranked by urgency and timing.
+            </p>
+            <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
+              <span className="rounded border border-border bg-surface-2 px-2 py-1">
+                {exportRows.length} in view
+              </span>
+              <span className="rounded border border-border bg-surface-2 px-2 py-1">
+                {stats.critical} urgent now
+              </span>
+            </div>
           </div>
+        </div>
+
+        <div className="rounded-lg border border-border bg-surface-1 px-3 py-2.5">
+          <QuickLinks />
+        </div>
+
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[12px] uppercase tracking-wide text-text-tertiary">
+            Live Priority Snapshot
+          </p>
         </div>
 
         <StatsBar stats={stats} loading={loading} />
@@ -248,7 +261,7 @@ export default function Page() {
         {error &&
           (isConnectionError ? (
             <div className="rounded-lg border border-amber-200 bg-amber-50 px-5 py-4">
-              <h2 className="font-serif text-base font-semibold text-amber-900">
+              <h2 className="text-base font-semibold text-amber-900">
                 This list is almost ready
               </h2>
               <p className="mt-1 text-sm text-amber-800">
@@ -272,7 +285,7 @@ export default function Page() {
 
         {!loading && filtered.length === 0 ? (
           <div className="rounded-lg border border-border bg-surface-1 px-6 py-12 text-center">
-            <h2 className="font-serif text-lg font-semibold text-text-primary">
+            <h2 className="text-lg font-semibold text-text-primary">
               No matches in this view
             </h2>
             <p className="mt-2 text-sm text-text-secondary">
