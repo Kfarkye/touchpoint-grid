@@ -1,42 +1,32 @@
 "use client";
 
 import { Briefcase, Calculator, ExternalLink, LayoutDashboard } from "lucide-react";
+import type { QuickLinkContract } from "@/lib/payload-contract";
 
-const LINKS = [
-  {
-    label: "Nova Workspace",
-    href: "https://nova.ayahealthcare.com/",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Pre-Start Pipeline",
-    href: "https://nova.ayahealthcare.com/",
-    icon: Briefcase,
-  },
-  {
-    label: "Margin Calculator",
-    href: "https://nova.ayahealthcare.com/",
-    icon: Calculator,
-  },
-  {
-    label: "Aya Marketplace",
-    href: "https://www.ayahealthcare.com/travel-nursing/jobs",
-    icon: ExternalLink,
-  },
-] as const;
+interface QuickLinksProps {
+  title: string;
+  links: QuickLinkContract[];
+}
 
-export function QuickLinks() {
+const ICON_MAP = {
+  dashboard: LayoutDashboard,
+  briefcase: Briefcase,
+  calculator: Calculator,
+  external: ExternalLink,
+} as const;
+
+export function QuickLinks({ title, links }: QuickLinksProps) {
   return (
     <div className="rounded-xl border border-border bg-gradient-to-r from-surface-1 to-surface-2 px-4 py-3">
       <div className="mb-2 text-[11px] uppercase tracking-wider text-text-tertiary">
-        Recruiter Shortcuts
+        {title}
       </div>
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        {LINKS.map((link) => {
-          const Icon = link.icon;
+        {links.map((link) => {
+          const Icon = ICON_MAP[link.icon];
           return (
             <a
-              key={link.label}
+              key={link.id}
               href={link.href}
               target="_blank"
               rel="noreferrer noopener"

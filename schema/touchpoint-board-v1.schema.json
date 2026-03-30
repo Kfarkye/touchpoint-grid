@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://touchpoint-grid.vercel.app/schema/touchpoint-board-v1.schema.json",
+  "title": "Touchpoint Board Payload v1",
+  "type": "object",
+  "required": [
+    "object",
+    "id",
+    "url",
+    "resource",
+    "api_version",
+    "generated_at",
+    "section_order",
+    "null_policy",
+    "semantics",
+    "sections",
+    "rows"
+  ],
+  "properties": {
+    "object": { "const": "touchpoint_board" },
+    "id": { "const": "recruiter-command-board" },
+    "url": { "const": "/" },
+    "resource": {
+      "type": "object",
+      "required": ["html_url", "json_url"],
+      "properties": {
+        "html_url": { "const": "/" },
+        "json_url": { "const": "/api/payload/recruiter-command-board" }
+      },
+      "additionalProperties": false
+    },
+    "api_version": { "const": "v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "section_order": {
+      "type": "array",
+      "const": ["hero", "stats", "quick_links", "filters", "table", "footer"]
+    },
+    "null_policy": {
+      "type": "object",
+      "required": [
+        "value_placeholder",
+        "missing_phone",
+        "missing_email",
+        "missing_specialty",
+        "missing_next_assignment",
+        "booked_next_assignment"
+      ],
+      "properties": {
+        "value_placeholder": { "type": "string" },
+        "missing_phone": { "type": "string" },
+        "missing_email": { "type": "string" },
+        "missing_specialty": { "type": "string" },
+        "missing_next_assignment": { "type": "string" },
+        "booked_next_assignment": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "semantics": {
+      "type": "object",
+      "required": ["color_meaning", "priority", "bucket"],
+      "properties": {
+        "color_meaning": { "type": "object" },
+        "priority": { "type": "object" },
+        "bucket": { "type": "object" }
+      }
+    },
+    "sections": { "type": "object" },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "candidate_id",
+          "candidate_name",
+          "phone",
+          "email",
+          "bucket",
+          "priority_level",
+          "priority_score",
+          "suggested_action"
+        ],
+        "properties": {
+          "candidate_id": { "type": "string" },
+          "candidate_name": { "type": "string" },
+          "phone": { "type": "string" },
+          "email": { "type": "string" },
+          "bucket": {
+            "enum": [
+              "critical_redeploy",
+              "redeploy_window",
+              "approaching_end",
+              "active_working",
+              "signed_next",
+              "between_assignments",
+              "prospect"
+            ]
+          },
+          "priority_level": {
+            "enum": ["critical", "high", "medium", "standard", "low"]
+          },
+          "priority_score": { "type": "number" },
+          "suggested_action": { "type": "string" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}
+

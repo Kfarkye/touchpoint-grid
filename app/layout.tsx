@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { BOARD_PAGE_DESCRIPTION, BOARD_PAGE_TITLE } from "@/lib/payload-contract";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Candidate Follow-Up Board",
-  description: "Recruiter outreach board for travel healthcare placements",
+  title: BOARD_PAGE_TITLE,
+  description: BOARD_PAGE_DESCRIPTION,
 };
 
 export default function RootLayout({

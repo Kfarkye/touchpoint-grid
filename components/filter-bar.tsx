@@ -1,6 +1,7 @@
 "use client";
 
 import type { RefObject } from "react";
+import type { FilterOption } from "@/lib/payload-contract";
 
 interface FilterBarProps {
   priorityFilter: string;
@@ -9,30 +10,15 @@ interface FilterBarProps {
   setBucketFilter: (v: string) => void;
   searchQuery: string;
   setSearchQuery: (v: string) => void;
-  filteredCount: number;
-  totalCount: number;
   searchInputRef: RefObject<HTMLInputElement | null>;
+  priorityLabel: string;
+  stageLabel: string;
+  searchPlaceholder: string;
+  clearSearchLabel: string;
+  priorityOptions: FilterOption[];
+  bucketOptions: FilterOption[];
+  countLabel: string;
 }
-
-const priorities: { key: string; label: string }[] = [
-  { key: "all", label: "All Levels" },
-  { key: "critical", label: "Immediate" },
-  { key: "high", label: "High" },
-  { key: "medium", label: "Medium" },
-  { key: "standard", label: "Standard" },
-  { key: "low", label: "Low" },
-];
-
-const buckets: { key: string; label: string }[] = [
-  { key: "all", label: "All Stages" },
-  { key: "critical_redeploy", label: "Urgent Redeploy" },
-  { key: "redeploy_window", label: "Redeploy Window" },
-  { key: "approaching_end", label: "Approaching End" },
-  { key: "active_working", label: "Active Assignment" },
-  { key: "signed_next", label: "Signed Next" },
-  { key: "between_assignments", label: "Between Assignments" },
-  { key: "prospect", label: "Prospect" },
-];
 
 export function FilterBar({
   priorityFilter,
@@ -41,18 +27,23 @@ export function FilterBar({
   setBucketFilter,
   searchQuery,
   setSearchQuery,
-  filteredCount,
-  totalCount,
   searchInputRef,
+  priorityLabel,
+  stageLabel,
+  searchPlaceholder,
+  clearSearchLabel,
+  priorityOptions,
+  bucketOptions,
+  countLabel,
 }: FilterBarProps) {
   return (
     <div className="space-y-3">
       {/* Priority pills */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[11px] text-text-tertiary uppercase tracking-wider mr-1 w-14">
-          Urgency
+          {priorityLabel}
         </span>
-        {priorities.map((p) => (
+        {priorityOptions.map((p) => (
           <button
             key={p.key}
             onClick={() => setPriorityFilter(p.key)}
@@ -66,9 +57,9 @@ export function FilterBar({
       {/* Bucket pills */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[11px] text-text-tertiary uppercase tracking-wider mr-1 w-14">
-          Stage
+          {stageLabel}
         </span>
-        {buckets.map((b) => (
+        {bucketOptions.map((b) => (
           <button
             key={b.key}
             onClick={() => setBucketFilter(b.key)}
@@ -87,7 +78,7 @@ export function FilterBar({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search clinician, facility, or specialty..."
+            placeholder={searchPlaceholder}
             className="w-full pl-3 pr-8 py-2 rounded-md border border-border bg-surface-1
                        text-sm text-text-primary placeholder:text-text-tertiary
                        focus:outline-none focus:border-accent/40 focus:ring-1 focus:ring-accent/20
@@ -96,6 +87,7 @@ export function FilterBar({
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
+              title={clearSearchLabel}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary
                          hover:text-text-secondary text-xs"
             >
@@ -104,9 +96,7 @@ export function FilterBar({
           )}
         </div>
         <span className="text-xs text-text-tertiary font-mono">
-          {filteredCount === totalCount
-            ? `${totalCount} clinicians in view`
-            : `${filteredCount} of ${totalCount} clinicians in view`}
+          {countLabel}
         </span>
       </div>
     </div>
