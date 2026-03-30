@@ -11,8 +11,8 @@
   body {
     @apply bg-surface-0 text-text-primary;
     background-image:
-      radial-gradient(1200px 600px at 15% -10%, rgba(34, 211, 238, 0.08), transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, rgba(14, 116, 144, 0.12), transparent 50%);
+      radial-gradient(900px 420px at 12% -8%, rgba(79, 110, 247, 0.06), transparent 60%),
+      radial-gradient(720px 380px at 100% 0%, rgba(47, 143, 95, 0.06), transparent 52%);
     background-attachment: fixed;
   }
 
@@ -41,18 +41,17 @@
     @apply bg-surface-2/85;
   }
 
-  /* Filter pill */
-  .pill {
-    @apply px-3 py-1.5 rounded-full text-xs font-medium
-           border border-border text-text-secondary
-           transition-all duration-150 cursor-pointer select-none
-           bg-surface-1/70;
+  /* Filter tabs */
+  .filter-tab {
+    @apply px-0.5 py-1 text-xs text-text-secondary
+           border-b-2 border-transparent font-medium
+           transition-colors duration-150 cursor-pointer select-none;
   }
-  .pill:hover {
-    @apply border-border-hover text-text-primary;
+  .filter-tab:hover {
+    @apply text-text-primary;
   }
-  .pill-active {
-    @apply bg-accent/10 border-accent/30 text-accent;
+  .filter-tab-active {
+    @apply text-text-primary border-text-primary font-semibold;
   }
 
   /* Sort header */
@@ -61,7 +60,7 @@
            text-text-tertiary hover:text-text-secondary transition-colors;
   }
   .sort-header-active {
-    @apply text-accent;
+    @apply text-text-primary;
   }
 
   /* Priority bar — mini horizontal indicator */

@@ -41,37 +41,27 @@ const REQUIRED_COLUMN_IDS: TableColumnId[] = [
 
 const PRIORITY_STYLE: Record<
   KnownPriorityLevel,
-  { color: string; bg: string; ring: string; dot: string }
+  { color: string; bg: string }
 > = {
   critical: {
-    color: "text-red-400",
-    bg: "bg-red-500/10",
-    ring: "ring-red-500/30",
-    dot: "bg-red-400 animate-pulse",
+    color: "text-priority-critical",
+    bg: "bg-[#cc4f3f14]",
   },
   high: {
-    color: "text-orange-400",
-    bg: "bg-orange-500/10",
-    ring: "ring-orange-500/30",
-    dot: "bg-orange-400",
+    color: "text-priority-high",
+    bg: "bg-[#cc7f3f14]",
   },
   medium: {
-    color: "text-yellow-400",
-    bg: "bg-yellow-500/10",
-    ring: "ring-yellow-500/30",
-    dot: "bg-yellow-400",
+    color: "text-priority-medium",
+    bg: "bg-[#9f8a4d14]",
   },
   standard: {
-    color: "text-zinc-400",
-    bg: "bg-zinc-500/10",
-    ring: "ring-zinc-500/30",
-    dot: "bg-zinc-400",
+    color: "text-text-secondary",
+    bg: "bg-[#8a8f9812]",
   },
   low: {
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
-    ring: "ring-emerald-500/30",
-    dot: "bg-emerald-400",
+    color: "text-priority-low",
+    bg: "bg-[#3e9a6814]",
   },
 };
 
@@ -87,38 +77,33 @@ function PriorityBadge({
   const knownLevel = level in PRIORITY_STYLE ? (level as KnownPriorityLevel) : null;
   const cfg = knownLevel
     ? PRIORITY_STYLE[knownLevel]
-    : { color: "text-zinc-300", bg: "bg-zinc-500/10", ring: "ring-zinc-500/30", dot: "bg-zinc-300" };
+    : { color: "text-text-secondary", bg: "bg-[#8a8f9812]" };
   const semanticEntry = semantics.priority[level] ?? semantics.priority_fallback;
   const label = semanticEntry.label;
 
   return (
     <span
       title={suggestedAction}
-      className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[11px] font-medium ring-1 ${cfg.bg} ${cfg.color} ${cfg.ring}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${cfg.bg} ${cfg.color}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${cfg.dot}`} />
       {label}
     </span>
   );
 }
 
 function ScoreBar({ score }: { score: number }) {
-  const color =
-    score >= 80
-      ? "bg-red-400"
-      : score >= 50
-      ? "bg-orange-400"
-      : score >= 25
-      ? "bg-yellow-400"
-      : score >= 15
-      ? "bg-zinc-500"
-      : "bg-emerald-400";
+  const fillClass =
+    score >= 60
+      ? "bg-tone-green"
+      : score <= 40
+      ? "bg-border"
+      : "bg-text-tertiary";
 
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-3">
+      <div className="h-[3px] w-16 overflow-hidden rounded-full bg-[#E8E7E3]">
         <div
-          className={`h-full rounded-full ${color} transition-all duration-500`}
+          className={`h-full rounded-full ${fillClass} transition-all duration-500`}
           style={{ width: `${Math.min(100, score)}%` }}
         />
       </div>
@@ -173,8 +158,7 @@ function LifecycleTag({
   if (row.has_next_assignment) {
     return (
       <div className="flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-        <span className="max-w-[140px] truncate text-[11px] text-emerald-400">
+        <span className="inline-flex max-w-[180px] truncate rounded-full bg-tone-green-muted px-2 py-0.5 text-[11px] text-tone-green">
           {row.next_facility ?? nullPolicy.booked_next_assignment}
         </span>
       </div>
@@ -182,7 +166,7 @@ function LifecycleTag({
   }
   if (row.bucket === "between_assignments" || row.bucket === "prospect") {
     return (
-      <span className="text-[11px] italic text-text-tertiary">
+      <span className="inline-flex rounded-full bg-accent-muted px-2 py-0.5 text-[11px] text-accent">
         {nullPolicy.missing_next_assignment}
       </span>
     );
@@ -191,15 +175,8 @@ function LifecycleTag({
 }
 
 function SortIcon({ direction }: { direction: false | "asc" | "desc" }) {
-  if (!direction) {
-    return <span className="ml-0.5 text-[10px] text-text-tertiary/40">↕</span>;
-  }
-
-  return (
-    <span className="ml-0.5 text-[10px] text-accent">
-      {direction === "asc" ? "↑" : "↓"}
-    </span>
-  );
+  if (!direction) return null;
+  return <span className="ml-0.5 text-[10px] text-text-primary">▼</span>;
 }
 
 function CandidateCell({
@@ -224,15 +201,15 @@ function CandidateCell({
           href={novaHref}
           target="_blank"
           rel="noreferrer noopener"
-          className="text-sm font-medium text-text-primary hover:text-accent"
+          className="text-sm font-semibold text-text-primary hover:text-accent"
           title={tableContract.row_actions.nova_title}
         >
           {row.candidate_name}
         </a>
       ) : (
-        <div className="text-sm font-medium text-text-primary">{row.candidate_name}</div>
+        <div className="text-sm font-semibold text-text-primary">{row.candidate_name}</div>
       )}
-      <div className="text-[11px] text-text-tertiary">
+      <div className="text-[11px] font-normal text-text-secondary">
         {row.specialty || nullPolicy.missing_specialty}
       </div>
       <div className="font-mono text-[11px] text-text-secondary">{phoneDisplay}</div>
@@ -270,7 +247,7 @@ function RowActions({
     : null;
 
   const actionClass =
-    "inline-flex items-center justify-center text-zinc-500 transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
+    "inline-flex items-center justify-center text-text-tertiary transition-colors hover:text-accent disabled:cursor-not-allowed disabled:opacity-30";
 
   const onCall = () => {
     if (!phoneAvailable) return;
@@ -505,10 +482,10 @@ function useColumns(
 
           return (
             <div className="flex items-center gap-1.5">
-              {overdue && <span className="h-1.5 w-1.5 rounded-full bg-yellow-400" />}
+              {overdue && <span className="h-1.5 w-1.5 rounded-full bg-priority-high" />}
               <span
                 className={`font-mono text-xs ${
-                  overdue ? "text-yellow-400" : "text-text-tertiary"
+                  overdue ? "text-priority-high" : "text-text-tertiary"
                 }`}
               >
                 {days}
@@ -525,14 +502,27 @@ function useColumns(
         id: "bucket",
         header: columnMetaById.bucket.label,
         accessorKey: "bucket",
-        cell: ({ row }) => (
-          <span
-            title={row.original.suggested_action}
-            className="text-[11px] text-text-tertiary"
-          >
-            {(semantics.bucket[row.original.bucket] ?? semantics.bucket_fallback).label}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const stageLabel =
+            (semantics.bucket[row.original.bucket] ?? semantics.bucket_fallback).label;
+          const tagTone =
+            row.original.bucket === "signed_next"
+              ? "bg-tone-green-muted text-tone-green"
+              : row.original.bucket === "critical_redeploy" ||
+                row.original.bucket === "redeploy_window" ||
+                row.original.bucket === "approaching_end"
+              ? "bg-accent-muted text-accent"
+              : "bg-tone-blue-muted text-tone-blue";
+
+          return (
+            <span
+              title={row.original.suggested_action}
+              className={`inline-flex rounded-full px-2 py-0.5 text-[11px] ${tagTone}`}
+            >
+              {stageLabel}
+            </span>
+          );
+        },
         size: 140,
         sortingFn: "text",
         enableSorting: columnMetaById.bucket.sortable,

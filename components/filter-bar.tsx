@@ -38,8 +38,7 @@ export function FilterBar({
 }: FilterBarProps) {
   return (
     <div className="space-y-3">
-      {/* Priority pills */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         <span className="text-[11px] text-text-tertiary uppercase tracking-wider mr-1 w-14">
           {priorityLabel}
         </span>
@@ -47,15 +46,14 @@ export function FilterBar({
           <button
             key={p.key}
             onClick={() => setPriorityFilter(p.key)}
-            className={`pill ${priorityFilter === p.key ? "pill-active" : ""}`}
+            className={`filter-tab ${priorityFilter === p.key ? "filter-tab-active" : ""}`}
           >
             {p.label}
           </button>
         ))}
       </div>
 
-      {/* Bucket pills */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-3 flex-wrap">
         <span className="text-[11px] text-text-tertiary uppercase tracking-wider mr-1 w-14">
           {stageLabel}
         </span>
@@ -63,7 +61,9 @@ export function FilterBar({
           <button
             key={b.key}
             onClick={() => setBucketFilter(b.key)}
-            className={`pill ${bucketFilter === b.key ? "pill-active" : ""}`}
+            className={`filter-tab font-mono ${
+              bucketFilter === b.key ? "filter-tab-active" : ""
+            }`}
           >
             {b.label}
           </button>

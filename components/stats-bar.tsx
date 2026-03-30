@@ -19,11 +19,11 @@ const TONE_STYLE: Record<
   StatCardContract["tone"],
   { color: string; border: string }
 > = {
-  critical: { color: "text-red-400", border: "border-red-500/20" },
-  high: { color: "text-orange-400", border: "border-orange-500/20" },
-  medium: { color: "text-yellow-400", border: "border-yellow-500/20" },
-  standard: { color: "text-zinc-400", border: "border-zinc-500/20" },
-  low: { color: "text-emerald-400", border: "border-emerald-500/20" },
+  critical: { color: "text-priority-critical", border: "border-[#cc4f3f30]" },
+  high: { color: "text-priority-high", border: "border-[#cc7f3f30]" },
+  medium: { color: "text-priority-medium", border: "border-[#9f8a4d30]" },
+  standard: { color: "text-text-secondary", border: "border-border" },
+  low: { color: "text-priority-low", border: "border-[#3e9a6830]" },
   neutral: { color: "text-text-primary", border: "border-border" },
 };
 
@@ -33,8 +33,7 @@ export function StatsBar({ cards, values, loading, loadingValueLabel }: StatsBar
       {cards.map((card) => (
         <div
           key={card.id}
-          className={`rounded-lg border ${TONE_STYLE[card.tone].border} bg-surface-1 px-4 py-3
-                      transition-all duration-200 hover:bg-surface-2`}
+          className={`rounded-lg border ${TONE_STYLE[card.tone].border} bg-surface-1 px-4 py-3 transition-colors duration-150 hover:bg-surface-2`}
         >
           <div className="text-[11px] text-text-tertiary uppercase tracking-wider">
             {card.label}

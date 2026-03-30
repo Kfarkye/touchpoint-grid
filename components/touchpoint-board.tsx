@@ -192,7 +192,7 @@ export function TouchpointBoard({ initialPayload }: Props) {
     ReactNode
   > = {
     hero: (
-      <section className="rounded-xl border border-border bg-gradient-to-r from-surface-1 to-surface-2 px-5 py-4">
+      <section className="rounded-xl border border-border bg-surface-1 px-5 py-4">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-text-primary">
@@ -203,11 +203,11 @@ export function TouchpointBoard({ initialPayload }: Props) {
             </p>
           </div>
           <div className="inline-flex items-center gap-2 text-xs text-text-secondary">
-            <span className="rounded-full border border-border bg-surface-1 px-2.5 py-1">
+            <span className="rounded-full border border-border bg-surface-2 px-2.5 py-1">
               {filteredStats.total}{" "}
               {payload.sections.hero.chips.find((chip) => chip.id === "in_view")?.label}
             </span>
-            <span className="rounded-full border border-border bg-surface-1 px-2.5 py-1">
+            <span className="rounded-full border border-border bg-surface-2 px-2.5 py-1">
               {filteredStats.critical}{" "}
               {
                 payload.sections.hero.chips.find((chip) => chip.id === "critical_follow_up")
@@ -296,14 +296,14 @@ export function TouchpointBoard({ initialPayload }: Props) {
 
   return (
     <div className="min-h-screen bg-surface-0">
-      <header className="border-b border-border bg-surface-0/80 backdrop-blur">
+      <header className="border-b border-border bg-surface-1/90 backdrop-blur">
         <div className="mx-auto flex max-w-[1600px] items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-2 w-2 animate-pulse rounded-full bg-accent" />
-            <span className="text-sm font-medium tracking-tight text-text-primary">
+            <div className="h-1.5 w-1.5 rounded-full bg-accent/70" />
+            <span className="text-sm font-semibold tracking-tight text-text-primary">
               {payload.sections.hero.board_title}
             </span>
-            <span className="rounded-full border border-border px-2 py-0.5 font-mono text-2xs text-text-tertiary">
+            <span className="rounded-full border border-border bg-surface-2 px-2 py-0.5 font-mono text-2xs text-text-tertiary">
               {payload.sections.hero.board_badge}
             </span>
           </div>
@@ -320,7 +320,7 @@ export function TouchpointBoard({ initialPayload }: Props) {
             <button
               onClick={exportCsv}
               disabled={exportRows.length === 0 || loading}
-              className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-md border border-border bg-surface-1 px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
             >
               <Download className="h-3.5 w-3.5" />
               {payload.sections.hero.actions.export_label}
@@ -329,7 +329,7 @@ export function TouchpointBoard({ initialPayload }: Props) {
             <button
               onClick={loadData}
               disabled={loading}
-              className="rounded-md border border-border px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
+              className="rounded-md border border-border bg-surface-1 px-3 py-1.5 text-xs text-text-secondary transition-all duration-150 hover:border-border-hover hover:text-text-primary disabled:opacity-40"
             >
               {loading
                 ? payload.sections.hero.actions.syncing_label
