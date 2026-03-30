@@ -24,13 +24,27 @@ function formatLabel(template: string, values: Record<string, string | number>):
   return template.replace(/\{([a-z_]+)\}/g, (_, key) => String(values[key] ?? ""));
 }
 
+function formatSyncTime(isoTimestamp: string): string {
+  const parsed = new Date(isoTimestamp);
+  if (Number.isNaN(parsed.getTime())) {
+    return "—";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
 export function TouchpointBoard({ initialPayload }: Props) {
   const [payload, setPayload] = useState<TouchpointBoardPayload>(initialPayload);
   const [visibleRows, setVisibleRows] = useState<TouchpointRow[]>(initialPayload.rows);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastRefresh, setLastRefresh] = useState<Date>(
-    new Date(initialPayload.generated_at)
+  const [lastRefreshLabel, setLastRefreshLabel] = useState<string>(
+    formatSyncTime(initialPayload.generated_at)
   );
   const [sorting, setSorting] = useState<SortingState>([
     { id: "priority", desc: true },
@@ -53,7 +67,7 @@ export function TouchpointBoard({ initialPayload }: Props) {
       const nextPayload = (await response.json()) as TouchpointBoardPayload;
       setPayload(nextPayload);
       setVisibleRows(nextPayload.rows);
-      setLastRefresh(new Date(nextPayload.generated_at));
+      setLastRefreshLabel(formatSyncTime(nextPayload.generated_at));
       setError(null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unable to load the touchpoint board right now");
@@ -310,11 +324,7 @@ export function TouchpointBoard({ initialPayload }: Props) {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <span className="font-mono text-2xs text-text-tertiary">
-              {payload.sections.hero.actions.last_sync_label}{" "}
-              {lastRefresh.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {payload.sections.hero.actions.last_sync_label} {lastRefreshLabel}
             </span>
 
             <button
