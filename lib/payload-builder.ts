@@ -16,9 +16,9 @@ import {
   SECTION_ORDER,
 } from "@/lib/payload-contract";
 import { fetchTouchpointRows } from "@/lib/supabase";
-import type { PriorityLevel, TouchpointRow } from "@/lib/types";
+import type { KnownPriorityLevel, TouchpointRow } from "@/lib/types";
 
-const PRIORITY_RANK: Record<PriorityLevel, number> = {
+const PRIORITY_RANK: Record<KnownPriorityLevel, number> = {
   critical: 5,
   high: 4,
   medium: 3,
@@ -26,7 +26,14 @@ const PRIORITY_RANK: Record<PriorityLevel, number> = {
   low: 1,
 };
 
-const PRIORITY_SEMANTICS: TouchpointBoardPayload["semantics"]["priority"] = {
+const PRIORITY_SEMANTICS: Record<
+  KnownPriorityLevel,
+  {
+    label: string;
+    tone: KnownPriorityLevel;
+    badge_meaning: string;
+  }
+> = {
   critical: {
     label: "Critical",
     tone: "critical",
@@ -54,7 +61,13 @@ const PRIORITY_SEMANTICS: TouchpointBoardPayload["semantics"]["priority"] = {
   },
 };
 
-const BUCKET_SEMANTICS: TouchpointBoardPayload["semantics"]["bucket"] = {
+const BUCKET_SEMANTICS: Record<
+  string,
+  {
+    label: string;
+    badge_meaning: string;
+  }
+> = {
   critical_redeploy: {
     label: "Critical Redeploy",
     badge_meaning: "Assignment ended and no next assignment is signed.",
@@ -176,7 +189,9 @@ const QUICK_LINKS: TouchpointBoardPayload["sections"]["quick_links"]["links"] = 
 
 function sortRowsCanonical(rows: TouchpointRow[]): TouchpointRow[] {
   return [...rows].sort((a, b) => {
-    const priorityDelta = PRIORITY_RANK[b.priority_level] - PRIORITY_RANK[a.priority_level];
+    const priorityDelta =
+      (PRIORITY_RANK[b.priority_level as KnownPriorityLevel] ?? 0) -
+      (PRIORITY_RANK[a.priority_level as KnownPriorityLevel] ?? 0);
     if (priorityDelta !== 0) return priorityDelta;
 
     const scoreDelta = b.priority_score - a.priority_score;
@@ -184,6 +199,13 @@ function sortRowsCanonical(rows: TouchpointRow[]): TouchpointRow[] {
 
     return a.candidate_name.localeCompare(b.candidate_name);
   });
+}
+
+function labelFromSlug(value: string): string {
+  return value
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function buildStats(rows: TouchpointRow[]): TouchpointBoardPayload["sections"]["stats"]["values"] {
@@ -199,6 +221,33 @@ function buildStats(rows: TouchpointRow[]): TouchpointBoardPayload["sections"]["
 export function buildTouchpointBoardPayload(rows: TouchpointRow[]): TouchpointBoardPayload {
   const canonicalRows = sortRowsCanonical(rows);
   const stats = buildStats(canonicalRows);
+  const observedBuckets = Array.from(new Set(canonicalRows.map((row) => row.bucket))).filter(
+    Boolean
+  );
+
+  const dynamicBucketSemantics = observedBuckets.reduce<Record<string, { label: string; badge_meaning: string }>>(
+    (acc, bucket) => {
+      if (!acc[bucket]) {
+        acc[bucket] = BUCKET_SEMANTICS[bucket] ?? {
+          label: labelFromSlug(bucket),
+          badge_meaning: "Observed in source data and rendered from payload.",
+        };
+      }
+      return acc;
+    },
+    { ...BUCKET_SEMANTICS }
+  );
+
+  const bucketOptions: FilterOption[] = [
+    ...BUCKET_OPTIONS,
+    ...observedBuckets
+      .filter((bucket) => !BUCKET_OPTIONS.some((option) => option.key === bucket))
+      .sort((a, b) => a.localeCompare(b))
+      .map((bucket) => ({
+        key: bucket,
+        label: dynamicBucketSemantics[bucket].label,
+      })),
+  ];
 
   return {
     object: PAYLOAD_OBJECT,
@@ -229,7 +278,16 @@ export function buildTouchpointBoardPayload(rows: TouchpointRow[]): TouchpointBo
         neutral: "Neutral tone indicates non-priority aggregates.",
       },
       priority: PRIORITY_SEMANTICS,
-      bucket: BUCKET_SEMANTICS,
+      bucket: dynamicBucketSemantics,
+      priority_fallback: {
+        label: "Unscored",
+        tone: "neutral",
+        badge_meaning: "Priority level came from source data outside canonical levels.",
+      },
+      bucket_fallback: {
+        label: "Unknown Stage",
+        badge_meaning: "Bucket came from source data outside canonical stages.",
+      },
     },
     sections: {
       hero: {
@@ -273,7 +331,7 @@ export function buildTouchpointBoardPayload(rows: TouchpointRow[]): TouchpointBo
         clear_search_label: "Clear search",
         clear_filters_label: "Clear filters",
         priority_options: PRIORITY_OPTIONS,
-        bucket_options: BUCKET_OPTIONS,
+        bucket_options: bucketOptions,
         count_labels: {
           all: "{total} clinicians in view",
           filtered: "{filtered} of {total} clinicians in view",

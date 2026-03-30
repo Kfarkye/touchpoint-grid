@@ -57,11 +57,13 @@
     },
     "semantics": {
       "type": "object",
-      "required": ["color_meaning", "priority", "bucket"],
+      "required": ["color_meaning", "priority", "bucket", "priority_fallback", "bucket_fallback"],
       "properties": {
         "color_meaning": { "type": "object" },
         "priority": { "type": "object" },
-        "bucket": { "type": "object" }
+        "bucket": { "type": "object" },
+        "priority_fallback": { "type": "object" },
+        "bucket_fallback": { "type": "object" }
       }
     },
     "sections": { "type": "object" },
@@ -84,20 +86,8 @@
           "candidate_name": { "type": "string" },
           "phone": { "type": "string" },
           "email": { "type": "string" },
-          "bucket": {
-            "enum": [
-              "critical_redeploy",
-              "redeploy_window",
-              "approaching_end",
-              "active_working",
-              "signed_next",
-              "between_assignments",
-              "prospect"
-            ]
-          },
-          "priority_level": {
-            "enum": ["critical", "high", "medium", "standard", "low"]
-          },
+          "bucket": { "type": "string" },
+          "priority_level": { "type": "string" },
           "priority_score": { "type": "number" },
           "suggested_action": { "type": "string" }
         }
@@ -106,4 +96,3 @@
   },
   "additionalProperties": false
 }
-

@@ -1,4 +1,4 @@
-import type { Bucket, PriorityLevel, TouchpointRow } from "@/lib/types";
+import type { KnownBucket, KnownPriorityLevel, TouchpointRow } from "@/lib/types";
 
 export const PAYLOAD_OBJECT = "touchpoint_board" as const;
 export const PAYLOAD_ID = "recruiter-command-board" as const;
@@ -60,7 +60,7 @@ export type StatCardId =
 export type QuickLinkIcon = "dashboard" | "briefcase" | "calculator" | "external";
 
 export interface FilterOption {
-  key: "all" | PriorityLevel | Bucket;
+  key: "all" | KnownPriorityLevel | KnownBucket | string;
   label: string;
 }
 
@@ -68,7 +68,7 @@ export interface StatCardContract {
   id: StatCardId;
   label: string;
   sub_label?: string;
-  tone: PriorityLevel | "neutral";
+  tone: KnownPriorityLevel | "neutral";
 }
 
 export interface QuickLinkContract {
@@ -104,22 +104,31 @@ export interface TouchpointBoardPayload {
     booked_next_assignment: string;
   };
   semantics: {
-    color_meaning: Record<PriorityLevel | "neutral", string>;
+    color_meaning: Record<KnownPriorityLevel | "neutral", string>;
     priority: Record<
-      PriorityLevel,
+      string,
       {
         label: string;
-        tone: PriorityLevel;
+        tone: KnownPriorityLevel | "neutral";
         badge_meaning: string;
       }
     >;
     bucket: Record<
-      Bucket,
+      string,
       {
         label: string;
         badge_meaning: string;
       }
     >;
+    priority_fallback: {
+      label: string;
+      tone: "neutral";
+      badge_meaning: string;
+    };
+    bucket_fallback: {
+      label: string;
+      badge_meaning: string;
+    };
   };
   sections: {
     hero: {

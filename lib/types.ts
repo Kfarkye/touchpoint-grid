@@ -24,20 +24,20 @@ export interface TouchpointRow {
   week_of_contract: number | null;
   weeks_remaining: number | null;
   next_week_of_contract: number | null;
-  bucket: Bucket;
-  priority_level: PriorityLevel;
+  bucket: string;
+  priority_level: string;
   priority_score: number;
   suggested_action: string;
 }
 
-export type PriorityLevel =
+export type KnownPriorityLevel =
   | "critical"
   | "high"
   | "medium"
   | "standard"
   | "low";
 
-export type Bucket =
+export type KnownBucket =
   | "critical_redeploy"
   | "redeploy_window"
   | "approaching_end"

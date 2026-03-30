@@ -155,8 +155,8 @@ export function TouchpointBoard({ initialPayload }: Props) {
       row.current_facility_state ?? "",
       row.assignment_end ?? "",
       row.days_to_end ?? "",
-      priorityMap[row.priority_level].label,
-      bucketMap[row.bucket].label,
+      (priorityMap[row.priority_level] ?? payload.semantics.priority_fallback).label,
+      (bucketMap[row.bucket] ?? payload.semantics.bucket_fallback).label,
       row.suggested_action,
     ]);
 

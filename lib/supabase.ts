@@ -79,8 +79,8 @@ function normalizeRow(row: Record<string, unknown>): TouchpointRow {
     week_of_contract: toNumberOrNull(row.week_of_contract),
     weeks_remaining: toNumberOrNull(row.weeks_remaining),
     next_week_of_contract: toNumberOrNull(row.next_week_of_contract),
-    bucket: toStringOrEmpty(row.bucket) as TouchpointRow["bucket"],
-    priority_level: toStringOrEmpty(row.priority_level) as TouchpointRow["priority_level"],
+    bucket: toStringOrEmpty(row.bucket),
+    priority_level: toStringOrEmpty(row.priority_level),
     priority_score: toNumberOrZero(row.priority_score),
     suggested_action: toStringOrEmpty(row.suggested_action),
   };

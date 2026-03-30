@@ -13,7 +13,7 @@ import {
 import { Check, Copy, ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
 import { formatDisplay, hasPhone, toE164 } from "@/lib/phone";
 import type { TableColumnId, TouchpointBoardPayload } from "@/lib/payload-contract";
-import type { PriorityLevel, TouchpointRow } from "@/lib/types";
+import type { KnownPriorityLevel, TouchpointRow } from "@/lib/types";
 
 interface Props {
   data: TouchpointRow[];
@@ -40,7 +40,7 @@ const REQUIRED_COLUMN_IDS: TableColumnId[] = [
 ];
 
 const PRIORITY_STYLE: Record<
-  PriorityLevel,
+  KnownPriorityLevel,
   { color: string; bg: string; ring: string; dot: string }
 > = {
   critical: {
@@ -80,12 +80,16 @@ function PriorityBadge({
   suggestedAction,
   semantics,
 }: {
-  level: PriorityLevel;
+  level: string;
   suggestedAction: string;
   semantics: TouchpointBoardPayload["semantics"];
 }) {
-  const cfg = PRIORITY_STYLE[level];
-  const label = semantics.priority[level].label;
+  const knownLevel = level in PRIORITY_STYLE ? (level as KnownPriorityLevel) : null;
+  const cfg = knownLevel
+    ? PRIORITY_STYLE[knownLevel]
+    : { color: "text-zinc-300", bg: "bg-zinc-500/10", ring: "ring-zinc-500/30", dot: "bg-zinc-300" };
+  const semanticEntry = semantics.priority[level] ?? semantics.priority_fallback;
+  const label = semanticEntry.label;
 
   return (
     <span
@@ -388,7 +392,7 @@ function useColumns(
         header: columnMetaById.priority.label,
         accessorKey: "priority_score",
         cell: ({ row }) => (
-          <PriorityBadge
+      <PriorityBadge
             level={row.original.priority_level}
             suggestedAction={row.original.suggested_action}
             semantics={semantics}
@@ -526,7 +530,7 @@ function useColumns(
             title={row.original.suggested_action}
             className="text-[11px] text-text-tertiary"
           >
-            {semantics.bucket[row.original.bucket].label}
+            {(semantics.bucket[row.original.bucket] ?? semantics.bucket_fallback).label}
           </span>
         ),
         size: 140,
